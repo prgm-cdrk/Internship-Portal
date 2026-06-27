@@ -1,49 +1,34 @@
-// This is the dashboard page that users see after logging in
-// It displays the logged-in user's information (name, email, role)
-// It redirects to login if the user is not authenticated
-// It has a logout button that signs the user out
+//This page just checks the role and redirects. 
+// Users never actually see this page — it's just a router.
 
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';   // useSession gets current user, signOut logs out
-import { useRouter } from 'next/navigation';              // useRouter for programmatic navigation
-import { useEffect } from 'react';                       // useEffect for running code on status change
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
-  // Get the current session and loading status
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (status === 'loading') return;
+
+    if (!session) {
       router.push('/login');
+      return;
     }
-  }, [status, router]);
 
-  // Show loading while session is being fetched
-  if (status === 'loading') {
-    return <p>Loading...</p>;
-  }
+    // Route based on user role
+    const userRole = session.user?.role;
+    if (userRole === 'OWNER') {
+      router.push('/dashboard/owner');
+    } else if (userRole === 'COMPANY') {
+      router.push('/dashboard/company');
+    } else if (userRole === 'APPLICANT') {
+      router.push('/dashboard/applicant');
+    }
+  }, [session, status, router]);
 
-  // Fallback if no session exists
-  if (!session) {
-    return <p>Not authenticated</p>;
-  }
-
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>Dashboard</h1>
-      <p>Welcome, {session.user?.name}!</p>       {/* Display user's name from session */}
-      <p>Email: {session.user?.email}</p>          {/* Display user's email from session */}
-      <p>Role: {session.user?.role}</p>            {/* Display user's role (OWNER, COMPANY, APPLICANT) */}
-
-      <button
-        onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}   {/* Sign out and redirect to login */}
-        style={{ padding: '10px', cursor: 'pointer', marginTop: '20px' }}
-      >
-        Logout
-      </button>
-    </div>
-  );
+  return <p>Redirecting to your dashboard...</p>;
 }
