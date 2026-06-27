@@ -7,7 +7,7 @@
 import NextAuth from "next-auth"; //  the main library
 import CredentialsProvider from "next-auth/providers/credentials"; // for email/password login
 import bcrypt from "bcryptjs"; //for password hashing
-import { PrismaClient } from "@/src/generated/prisma"; //  to query your database
+import { PrismaClient } from "@prisma/client"; //  to query your database
 
 // connect to database Prisma 
 const prisma = new PrismaClient();

@@ -2,7 +2,7 @@
 // It receives email, name, password, and role from the registration form
 // Validates the input, hashes the password, and saves the user to the database
 
-import { PrismaClient } from '@/src/generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 // Create a Prisma client instance to interact with the database
