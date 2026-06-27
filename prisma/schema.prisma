@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: npx create-db
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  COMPANY
+  APPLICANT
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @unique
+  name String 
+  password String
+  role Role 
+  applications Application[] // create relation to Application model
+  tasks Task[] // linked to Task model
+  createdAt DateTime @default(now())
+}
+
+model Company {
+  id        Int     @id @default(autoincrement())
+  name      String
+  industry  String
+  website   String?
+  userId    Int
+  internships Internship[]
+  tasks Task[] // linked to Task model
+  announcements Announcement[] // linked to Announcement model
+  subscriptions Subscription[] // linked to Subscription model
+  createdAt DateTime @default(now())
+}
+
+// model for Internship Posting
+// company relation is declared by company Company 
+// enable to 1 company to multiple internship
+
+model Internship {
+  id Int @id @default(autoincrement())
+  title String
+  description String
+  slots Int
+  deadline DateTime 
+  companyId Int 
+  company Company  @relation(fields: [companyId], references: [id])
+  applications Application[] // create relation to Application model
+  createdAt DateTime @default(now())
+}
+
+enum Status {
+  APPLIED
+  REVIEWED
+  INTERVIEW
+  ACCEPTED 
+  REJECTED
+}
+
+model Application {
+  id Int @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references:[id]) // create relationship to User model
+  internshipId Int
+  internship Internship @relation(fields: [internshipId], references: [id]) // create relationship to internship model
+  status Status
+  documents Document[] // create relation to document model
+  appliedAt DateTime @default(now())
+
+  @@unique([userId, internshipId]) // constraints to prevent applying twice in same internship
+}
+
+model Document {
+  id Int @id @default(autoincrement())
+  applicationId Int
+  application Application @relation(fields: [applicationId], references: [id]) // create relation to application model
+  fileName String
+  fileUrl String
+  createdAt DateTime @default(now())
+}
+
+enum taskStatus {
+  ACCEPTED
+  ONGOING
+  COMPLETED
+}
+
+model Task {
+  id Int @id @default(autoincrement())
+  title String 
+  description String
+  deadline DateTime
+  status taskStatus
+  assignedTo Int
+  user User @relation(fields: [assignedTo], references: [id]) // linked to User model
+  companyId Int
+  company Company @relation(fields: [companyId], references: [id]) // linked to Company model
+  createdAt DateTime @default(now())
+}
+
+model Announcement {
+  id Int @id @default(autoincrement())
+  title String
+  content String
+  companyId Int
+  company Company @relation(fields: [companyId], references: [id]) // linked to Company model
+  createdAt DateTime @default(now())
+}
+
+enum Plan {
+  FREE 
+  BASIC 
+  PRO  
+}
+
+enum planStatus {
+  ACTIVE
+  EXPIRED
+}
+
+model Subscription {
+  id Int @id @default(autoincrement())
+  companyId Int @unique
+  company Company @relation(fields: [companyId], references: [id]) // linked to Company model
+  plan Plan
+  status planStatus
+  expiredAt DateTime 
+  createdAt DateTime @default(now())
+}
