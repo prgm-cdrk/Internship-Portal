@@ -96,6 +96,25 @@ body {
   z-index: 1;
 }
 
+.animate-border-rotate {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-border-rotate::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: conic-gradient(from 0deg, rgba(255,107,53,0.4), transparent 25%, rgba(255,107,53,0.4) 50%, transparent 75%, rgba(255,107,53,0.4));
+  animation: border-rotate 8s linear infinite;
+  z-index: 0;
+}
+
+.animate-border-rotate > * {
+  position: relative;
+  z-index: 1;
+}
+
 @keyframes scan-line {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }

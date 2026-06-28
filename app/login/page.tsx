@@ -73,8 +73,8 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md z-10">
         
-        {/* Card */}
-        <div className="rounded-2xl border border-dark-600">
+        {/* Animated border wrapper */}
+        <div className="animate-border-rotate rounded-2xl p-[1px]">
           <div className="bg-dark-800 rounded-2xl p-10 shadow-[0_0_30px_rgba(255,107,53,0.08)]">
           
           {/* Header */}
