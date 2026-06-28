@@ -70,7 +70,7 @@ export default function RegisterPage() {
       <div className="absolute bottom-[-150px] right-[-150px] w-[400px] h-[400px] bg-accent-primary/3 rounded-full blur-3xl" />
 
       {/* Registration card - horizontal */}
-      <div className="animate-border-glow rounded-2xl p-[2px] w-full max-w-3xl relative z-10">
+      <div className="rounded-2xl w-full max-w-3xl relative z-10 border border-dark-600">
         <div className="bg-dark-800 rounded-2xl overflow-hidden">
           <div className="flex flex-col md:flex-row">
 
