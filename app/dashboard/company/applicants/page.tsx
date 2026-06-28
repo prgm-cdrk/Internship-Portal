@@ -84,6 +84,8 @@ export default function ApplicantsPage() {
         prev.map(app => app.id === applicationId ? { ...app, status: newStatus } : app)
       );
       setUpdatingId(null);
+      // Refetch to get fresh data including startDate
+      fetchApplications();
     } catch {
       setError('Failed to update status');
       setUpdatingId(null);
