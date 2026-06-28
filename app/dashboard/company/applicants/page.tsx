@@ -95,7 +95,7 @@ export default function ApplicantsPage() {
   }
 
   return (
-    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full dashboard-grid">
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line dashboard-grid">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white tracking-wide">Applicants</h1>
