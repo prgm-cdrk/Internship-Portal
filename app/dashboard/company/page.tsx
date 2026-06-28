@@ -1,7 +1,7 @@
 // Company Manager Dashboard - only accessible by users with COMPANY role
 // On load, checks if the user already has a company profile
 // If NO company → redirects to /dashboard/company/create
-// If YES company → shows the company dashboard with profile, internships, etc.
+// If YES company → shows the company dashboard with actions and recent activity
 
 'use client';
 
@@ -9,11 +9,20 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+type Activity = {
+  type: 'application' | 'task' | 'announcement';
+  message: string;
+  detail: string;
+  timestamp: string;
+};
+
 export default function CompanyDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [company, setCompany] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -39,10 +48,24 @@ export default function CompanyDashboard() {
       }
       setCompany(data.company);
       setLoading(false);
+      fetchActivity();
     } catch (error) {
       console.error('Error checking company:', error);
       setCompany(null);
       setLoading(false);
+    }
+  };
+
+  const fetchActivity = async () => {
+    try {
+      const response = await fetch('/api/company/activity');
+      const data = await response.json();
+      if (response.ok) {
+        setActivities(data.activities);
+      }
+      setActivityLoading(false);
+    } catch (error) {
+      setActivityLoading(false);
     }
   };
 
@@ -83,6 +106,35 @@ export default function CompanyDashboard() {
     )}
   ];
 
+  const activityIcons: Record<string, JSX.Element> = {
+    application: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+    ),
+    task: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
+    ),
+    announcement: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+    )
+  };
+
+  const activityColors: Record<string, string> = {
+    application: 'text-neutral-400',
+    task: 'text-neutral-400',
+    announcement: 'text-neutral-400'
+  };
+
+  const timeAgo = (date: string) => {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
   return (
     <div className="p-8">
       <div className="max-w-6xl mx-auto">
@@ -93,7 +145,7 @@ export default function CompanyDashboard() {
         </div>
 
         {/* Actions grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
           {actions.map((action) => (
             <button
               key={action.label}
@@ -109,6 +161,47 @@ export default function CompanyDashboard() {
               </div>
             </button>
           ))}
+        </div>
+
+        {/* Recent Activity Board */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
+          <div className="px-5 py-4 border-b border-neutral-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h2 className="text-sm font-semibold text-white">Recent Activity</h2>
+            </div>
+            <button onClick={() => router.push('/dashboard/company/applicants')} className="text-xs text-neutral-500 hover:text-white transition-colors">
+              View all
+            </button>
+          </div>
+
+          <div className="divide-y divide-neutral-800/50">
+            {activityLoading ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-neutral-500 text-sm">Loading activity...</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-neutral-500 text-sm">No recent activity yet.</p>
+                <p className="text-neutral-600 text-xs mt-1">Activity will appear here when applicants apply or tasks are created.</p>
+              </div>
+            ) : (
+              activities.map((activity, index) => (
+                <div key={index} className="px-5 py-3 flex items-start gap-3 hover:bg-neutral-800/30 transition-colors">
+                  <div className={`mt-0.5 shrink-0 ${activityColors[activity.type]}`}>
+                    {activityIcons[activity.type]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white text-sm">{activity.message}</p>
+                    <p className="text-neutral-500 text-xs mt-0.5 truncate">{activity.detail}</p>
+                  </div>
+                  <span className="text-neutral-600 text-xs shrink-0 mt-0.5">{timeAgo(activity.timestamp)}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
