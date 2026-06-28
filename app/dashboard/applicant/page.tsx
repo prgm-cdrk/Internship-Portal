@@ -255,14 +255,10 @@ export default function ApplicantDashboard() {
 
   const isActivityUnread = (activity: ActivityItem): boolean => {
     if (activity.type === 'task') {
-      const readTaskIds = getReadIds(READ_TASKS_KEY);
-      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
-      const isRead = readTaskIds.includes(activity.id);
-      // Find current status from stored statuses (already saved by loadData)
-      const savedStatus = savedTaskStatuses[activity.id];
-      // Check if status changed — but we need the ORIGINAL status, not current
-      // A task is "new unread" if it was never clicked AND its status changed
-      return !isRead;
+      const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
+      const lastVisitTime = lastVisit ? new Date(lastVisit).getTime() : 0;
+      const taskUpdated = new Date(activity.timestamp).getTime();
+      return taskUpdated > lastVisitTime;
     }
     if (activity.type === 'application') {
       const readAppIds = getReadIds(READ_APPS_KEY);
