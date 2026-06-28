@@ -220,24 +220,26 @@ export default function ApplicantsPage() {
 
                       {/* Status updater */}
                       <div className="mt-4 pt-4 border-t border-neutral-800/50">
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Update Status</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {allStatuses.map((s) => (
-                            <button
-                              key={s}
-                              onClick={() => handleStatusUpdate(app.id, s)}
-                              disabled={app.status === s || isUpdating}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                app.status === s
-                                  ? 'bg-white text-black cursor-default'
-                                  : isUpdating
-                                    ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700 hover:text-white'
-                              }`}
-                            >
-                              {s}
-                            </button>
-                          ))}
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
+                        <div className="bg-neutral-800 rounded-lg p-4">
+                          <div className="flex gap-2 flex-wrap">
+                            {allStatuses.map((s) => (
+                              <button
+                                key={s}
+                                onClick={() => handleStatusUpdate(app.id, s)}
+                                disabled={app.status === s || isUpdating}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                  app.status === s
+                                    ? 'bg-white text-black cursor-default'
+                                    : isUpdating
+                                      ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                                      : 'bg-neutral-700 text-neutral-400 border border-neutral-600 hover:bg-neutral-600 hover:text-white'
+                                }`}
+                              >
+                                {s}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
