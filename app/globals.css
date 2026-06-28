@@ -103,7 +103,6 @@ body {
 
 .animate-scan-line {
   position: relative;
-  overflow: hidden;
 }
 
 .animate-scan-line::before {
@@ -112,9 +111,15 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  height: 2px;
+  background: linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.15) 50%, transparent 90%);
+  box-shadow: 0 0 20px 4px rgba(255,255,255,0.06);
   animation: scan-line 6s linear infinite;
   z-index: 0;
   pointer-events: none;
+}
+
+.animate-scan-line > * {
+  position: relative;
+  z-index: 1;
 }
