@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
+import { useSession, signOut } from 'next-auth/react';   // useSession gets current user, signOut logs out
 import { useRouter } from 'next/navigation';         // useRouter for redirecting
 import { useEffect, useState } from 'react';         // useEffect for auth check, useState for company data
 
@@ -200,6 +200,22 @@ export default function CompanyDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Logout button */}
+      <button
+        onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
+        style={{
+          marginTop: '40px',
+          padding: '10px 20px',
+          backgroundColor: '#ff4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 }
