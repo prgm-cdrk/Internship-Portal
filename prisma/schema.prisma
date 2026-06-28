@@ -117,6 +117,7 @@ model Task {
   user User @relation(fields: [assignedTo], references: [id]) // linked to User model
   companyId Int
   company Company @relation(fields: [companyId], references: [id]) // linked to Company model
+  reviewedAt DateTime? // Set when manager accepts the completed task
   createdAt DateTime @default(now())
 }
 
