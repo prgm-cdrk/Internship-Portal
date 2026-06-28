@@ -1,6 +1,6 @@
 // Applicant Dashboard - shows application stats and quick actions
-// Unread tasks in Recent Activity are bold and clickable
-// My Tasks button shows notification badge for unread tasks
+// Unread tasks, application status changes, and new announcements show notification badges
+// Clicking unread activity items marks them as read and redirects
 
 'use client';
 
@@ -22,24 +22,39 @@ type ActivityItem = {
   timestamp: string;
 };
 
-const STORAGE_KEY = 'readTasks';
+// localStorage keys
+const READ_TASKS_KEY = 'readTasks';
+const APP_STATUSES_KEY = 'appStatuses';
+const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
 
-function getReadTaskIds(): number[] {
+function getReadIds(key: string): number[] {
   if (typeof window === 'undefined') return [];
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
+  } catch { return []; }
+}
+
+function markAsRead(key: string, id: number) {
+  const read = getReadIds(key);
+  if (!read.includes(id)) {
+    read.push(id);
+    localStorage.setItem(key, JSON.stringify(read));
   }
 }
 
-function markTaskAsRead(id: number) {
-  const read = getReadTaskIds();
-  if (!read.includes(id)) {
-    read.push(id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(read));
-  }
+function getAppStatuses(): Record<number, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const stored = localStorage.getItem(APP_STATUSES_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch { return {}; }
+}
+
+function setAppStatus(id: number, status: string) {
+  const statuses = getAppStatuses();
+  statuses[id] = status;
+  localStorage.setItem(APP_STATUSES_KEY, JSON.stringify(statuses));
 }
 
 export default function ApplicantDashboard() {
@@ -49,14 +64,16 @@ export default function ApplicantDashboard() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
-  const [readIds, setReadIds] = useState<number[]>([]);
+  const [readTaskIds, setReadTaskIds] = useState<number[]>([]);
   const [unreadTaskCount, setUnreadTaskCount] = useState(0);
+  const [unreadAppCount, setUnreadAppCount] = useState(0);
+  const [unreadAnnouncementCount, setUnreadAnnouncementCount] = useState(0);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'loading') return;
     if (!session || session.user?.role !== 'APPLICANT') { router.push('/login'); return; }
-    setReadIds(getReadTaskIds());
+    setReadTaskIds(getReadIds(READ_TASKS_KEY));
     fetchStats();
     fetchActivity();
   }, [session, status, router]);
@@ -71,17 +88,33 @@ export default function ApplicantDashboard() {
       const appData = await appRes.json();
       const taskData = await taskRes.json();
       const announceData = await announceRes.json();
+
       setStats({
         applications: appData.applications?.length || 0,
         tasks: taskData.tasks?.length || 0,
         announcements: announceData.announcements?.length || 0
       });
 
-      // Count unread tasks
-      const readIdsNow = getReadTaskIds();
+      const readTaskIdsNow = getReadIds(READ_TASKS_KEY);
       const allTasks = taskData.tasks || [];
-      const unread = allTasks.filter((t: any) => !readIdsNow.includes(t.id)).length;
-      setUnreadTaskCount(unread);
+      setUnreadTaskCount(allTasks.filter((t: any) => !readTaskIdsNow.includes(t.id)).length);
+
+      // Count applications with status changes
+      const savedStatuses = getAppStatuses();
+      const apps = appData.applications || [];
+      let unreadApps = 0;
+      for (const app of apps) {
+        const saved = savedStatuses[app.id];
+        if (!saved || saved !== app.status) {
+          unreadApps++;
+        }
+      }
+      setUnreadAppCount(unreadApps);
+
+      // Count unread announcements
+      const readAnnIds = getReadIds(READ_ANNOUNCEMENTS_KEY);
+      const announcements = announceData.announcements || [];
+      setUnreadAnnouncementCount(announcements.filter((a: any) => !readAnnIds.includes(a.id)).length);
 
       setLoading(false);
     } catch {
@@ -126,18 +159,24 @@ export default function ApplicantDashboard() {
        .slice(0, 5);
 
       setActivities(all);
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
     setActivityLoading(false);
   };
 
   const handleActivityClick = (activity: ActivityItem) => {
     if (activity.type === 'task') {
-      markTaskAsRead(activity.id);
-      setReadIds(getReadTaskIds());
+      markAsRead(READ_TASKS_KEY, activity.id);
+      setReadTaskIds(getReadIds(READ_TASKS_KEY));
       setUnreadTaskCount(prev => Math.max(0, prev - 1));
       router.push('/dashboard/applicant/tasks');
+    } else if (activity.type === 'application') {
+      setAppStatus(activity.id, 'APPLIED');
+      setUnreadAppCount(prev => Math.max(0, prev - 1));
+      router.push('/dashboard/applicant/applications');
+    } else if (activity.type === 'announcement') {
+      markAsRead(READ_ANNOUNCEMENTS_KEY, activity.id);
+      setUnreadAnnouncementCount(prev => Math.max(0, prev - 1));
+      router.push('/dashboard/applicant/announcements');
     }
   };
 
@@ -145,13 +184,13 @@ export default function ApplicantDashboard() {
     { label: 'Browse Internships', desc: 'Find and apply to opportunities', path: '/dashboard/applicant/internships', badge: 0, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
     )},
-    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', badge: 0, icon: (
+    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', badge: unreadAppCount, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
     )},
     { label: 'My Tasks', desc: 'View assigned tasks', path: '/dashboard/applicant/tasks', badge: unreadTaskCount, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', badge: 0, icon: (
+    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', badge: unreadAnnouncementCount, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
     )},
   ];
@@ -220,7 +259,6 @@ export default function ApplicantDashboard() {
               onClick={() => router.push(action.path)}
               className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center gap-4 text-left transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-700 group relative"
             >
-              {/* Notification badge */}
               {action.badge > 0 && (
                 <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-white text-black text-[10px] font-bold flex items-center justify-center">
                   {action.badge}
@@ -260,26 +298,31 @@ export default function ApplicantDashboard() {
               </div>
             ) : (
               activities.map((activity, index) => {
-                const isUnreadTask = activity.type === 'task' && !readIds.includes(activity.id);
+                const isUnreadTask = activity.type === 'task' && !readTaskIds.includes(activity.id);
+                const isUnreadApp = activity.type === 'application' && (() => {
+                  const saved = getAppStatuses()[activity.id];
+                  return !saved || saved !== 'APPLIED';
+                })();
+                const isUnreadAnnouncement = activity.type === 'announcement' && !getReadIds(READ_ANNOUNCEMENTS_KEY).includes(activity.id);
+                const isUnread = isUnreadTask || isUnreadApp || isUnreadAnnouncement;
+
                 return (
                   <div
                     key={index}
                     onClick={() => handleActivityClick(activity)}
                     className={`px-5 py-3 flex items-start gap-3 transition-colors ${
-                      isUnreadTask
-                        ? 'hover:bg-neutral-800/50 cursor-pointer'
-                        : 'hover:bg-neutral-800/30'
+                      isUnread ? 'hover:bg-neutral-800/50 cursor-pointer' : 'hover:bg-neutral-800/30'
                     }`}
                   >
-                    <div className={`mt-0.5 shrink-0 ${isUnreadTask ? 'text-white' : 'text-neutral-400'}`}>
+                    <div className={`mt-0.5 shrink-0 ${isUnread ? 'text-white' : 'text-neutral-400'}`}>
                       {activityIcons[activity.type]}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm ${isUnreadTask ? 'text-white font-semibold' : 'text-white'}`}>
+                      <p className={`text-sm ${isUnread ? 'text-white font-semibold' : 'text-white'}`}>
                         {activity.message}
-                        {isUnreadTask && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-white align-middle" />}
+                        {isUnread && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-white align-middle" />}
                       </p>
-                      <p className={`text-xs mt-0.5 truncate ${isUnreadTask ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                      <p className={`text-xs mt-0.5 truncate ${isUnread ? 'text-neutral-400' : 'text-neutral-500'}`}>
                         {activity.detail}
                       </p>
                     </div>
