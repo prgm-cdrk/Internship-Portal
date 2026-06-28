@@ -1,0 +1,131 @@
+// This API route creates a PayMongo checkout session for upgrading to PRO plan
+// It sends a request to PayMongo's API to create a payment link
+// Then returns the checkout URL for the user to complete payment
+
+import { PrismaClient } from '@prisma/client';    // Prisma client to query database
+import { auth } from '@/lib/auth';                 // Auth function to get current session
+
+// Create a Prisma client instance to interact with the database
+const prisma = new PrismaClient();
+
+// PayMongo API configuration
+const PAYMONGO_SECRET_KEY = process.env.PAYMONGO_SECRET_KEY;  // Secret key from .env
+const PAYMONGO_API_URL = 'https://api.paymongo.com/v1';      // PayMongo API base URL
+
+// Handle POST requests to /api/payment/create-checkout
+export async function POST(req: Request) {
+  try {
+    // Get the current session to identify the logged-in user
+    const session = await auth();
+
+    // Check if user is authenticated — reject if not logged in
+    if (!session || !session.user?.id) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Parse the plan from request body
+    const { plan } = await req.json();
+
+    // Validate that plan is provided and is PRO
+    if (!plan || plan !== 'PRO') {
+      return Response.json(
+        { error: 'Invalid plan. Only PRO plan upgrade is available.' },
+        { status: 400 }
+      );
+    }
+
+    // Find the company linked to the logged-in user
+    const company = await prisma.company.findFirst({
+      where: { userId: parseInt(session.user.id) }
+    });
+
+    // If no company found, user must have a company first
+    if (!company) {
+      return Response.json(
+        { error: 'You must have a company first' },
+        { status: 400 }
+      );
+    }
+
+    // Check if PayMongo secret key is configured
+    if (!PAYMONGO_SECRET_KEY) {
+      return Response.json(
+        { error: 'Payment system not configured' },
+        { status: 500 }
+      );
+    }
+
+    // Create PayMongo checkout session via their API
+    // Using Basic Auth with secret key as username and empty password
+    const authHeader = 'Basic ' + Buffer.from(`${PAYMONGO_SECRET_KEY}:`).toString('base64');
+
+    const paymongoResponse = await fetch(`${PAYMONGO_API_URL}/checkout_sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader
+      },
+      body: JSON.stringify({
+        data: {
+          attributes: {
+            // Payment amount: ₱999 in centavos (99900)
+            line_items: [
+              {
+                name: 'PRO Plan - Monthly Subscription',
+                description: 'Upgrade to PRO plan for unlimited features',
+                quantity: 1,
+                amount: 99900,       // Amount in centavos (₱999)
+                currency: 'PHP'
+              }
+            ],
+            // Payment method types accepted
+            payment_method_types: ['gcash', 'paymaya', 'card'],
+            // Success and cancel redirect URLs
+            success_url: `${process.env.NEXTAUTH_URL}/dashboard/company/billing?success=true`,
+            cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/company/billing?cancelled=true`,
+            // Reference ID for tracking
+            reference_number: `PRO-${company.id}-${Date.now()}`,
+            // Description for the payment
+            description: `PRO Plan Subscription for ${company.name}`
+          }
+        }
+      })
+    });
+
+    // Parse PayMongo response
+    const paymongoData = await paymongoResponse.json();
+
+    // If PayMongo returned an error, return it
+    if (!paymongoResponse.ok) {
+      console.error('PayMongo error:', paymongoData);
+      return Response.json(
+        { error: 'Failed to create payment session' },
+        { status: 500 }
+      );
+    }
+
+    // Extract checkout URL from PayMongo response
+    const checkoutUrl = paymongoData.data?.attributes?.checkout_url;
+
+    if (!checkoutUrl) {
+      return Response.json(
+        { error: 'Failed to get checkout URL' },
+        { status: 500 }
+      );
+    }
+
+    // Return the checkout URL for the frontend to redirect
+    return Response.json({
+      checkoutUrl,
+      sessionId: paymongoData.data?.id
+    }, { status: 200 });
+
+  } catch (error) {
+    // Log the error for debugging and return a generic error message
+    console.error('Payment checkout error:', error);
+    return Response.json(
+      { error: 'Failed to create checkout session' },
+      { status: 500 }
+    );
+  }
+}
