@@ -20,15 +20,14 @@ export async function POST(req: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse the internship ID from the request body
-    const { internshipId } = await req.json();
+    const { internshipId, resumeUrl } = await req.json();
 
-    // Validate that internship ID is provided
     if (!internshipId) {
-      return Response.json(
-        { error: 'Internship ID is required' },
-        { status: 400 }
-      );
+      return Response.json({ error: 'Internship ID is required' }, { status: 400 });
+    }
+
+    if (!resumeUrl) {
+      return Response.json({ error: 'Resume is required' }, { status: 400 });
     }
 
     // Check if the internship exists
@@ -60,12 +59,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create the application record in the database
     const application = await prisma.application.create({
       data: {
         userId: parseInt(session.user.id),
         internshipId: parseInt(internshipId),
-        status: 'APPLIED'    // Default status when applying
+        status: 'APPLIED',
+        resumeUrl
       }
     });
 

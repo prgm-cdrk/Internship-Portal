@@ -77,14 +77,15 @@ enum Status {
 model Application {
   id Int @id @default(autoincrement())
   userId Int
-  user User @relation(fields: [userId], references:[id]) // create relationship to User model
+  user User @relation(fields: [userId], references:[id])
   internshipId Int
-  internship Internship @relation(fields: [internshipId], references: [id]) // create relationship to internship model
+  internship Internship @relation(fields: [internshipId], references: [id])
   status Status
-  documents Document[] // create relation to document model
+  resumeUrl String? // PDF resume path, e.g. /uploads/resumes/abc.pdf
+  documents Document[]
   appliedAt DateTime @default(now())
 
-  @@unique([userId, internshipId]) // constraints to prevent applying twice in same internship
+  @@unique([userId, internshipId])
 }
 
 model Document {
