@@ -4,7 +4,6 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,74 +40,63 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center">
-      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center">
-        
-        {/* Left Side - Illustration */}
-        <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-dark-900 to-dark-950 rounded-3xl lg:rounded-r-none">
-          <Image
-            src="/login-illustration.svg"
-            alt="InternHub Illustration"
-            width={400}
-            height={500}
-            className="max-w-full h-auto"
-            priority
-          />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* Minimal Geometric Accents */}
+      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
+      <div className="absolute bottom-32 left-10 w-48 h-48 rounded-full bg-accent-primary/5 blur-3xl"></div>
 
-        {/* Right Side - Form */}
-        <div className="p-8 lg:p-12">
+      <div className="relative w-full max-w-md z-10">
+        
+        {/* Main Card */}
+        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-10 shadow-2xl">
+          
           {/* Header */}
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-accent-primary to-accent-dark rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-2xl">📚</span>
-              </div>
-              <h1 className="text-4xl font-bold text-white">
-                Intern<span className="text-accent-primary">Hub</span>
-              </h1>
-            </div>
-            <p className="text-dark-300 text-sm font-light tracking-widest">
-              WELCOME BACK TO YOUR JOURNEY
+          <div className="mb-12">
+            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
+              Login
+            </h1>
+            <p className="text-gray-400 text-sm font-light">
+              Access your internship portal
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
-              <p className="text-red-400 text-sm font-medium">⚠️ {error}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-8">
+              <p className="text-red-400 text-sm">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             
             {/* Email Field */}
             <div>
-              <label className="block text-white font-semibold mb-3 text-sm tracking-wide">
-                EMAIL ADDRESS
+              <label className="block text-gray-300 font-medium mb-3 text-sm">
+                Email
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
                 required
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-white font-semibold mb-3 text-sm tracking-wide">
-                PASSWORD
+              <label className="block text-gray-300 font-medium mb-3 text-sm">
+                Password
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
                 required
               />
             </div>
@@ -117,31 +105,35 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-accent-primary to-accent-light hover:shadow-lg hover:shadow-accent-primary/50 text-white font-bold py-4 rounded-xl transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8 transform hover:scale-105 active:scale-95"
+              className="w-full bg-accent-primary hover:bg-accent-light text-white font-semibold py-3 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '⏳ SIGNING IN...' : '✨ SIGN IN'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           {/* Divider */}
           <div className="flex items-center my-8">
-            <div className="flex-1 border-t border-dark-700"></div>
-            <span className="px-3 text-dark-400 text-xs font-light">or</span>
-            <div className="flex-1 border-t border-dark-700"></div>
+            <div className="flex-1 border-t border-gray-700"></div>
+            <span className="px-3 text-gray-500 text-xs">or</span>
+            <div className="flex-1 border-t border-gray-700"></div>
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-dark-300 text-sm">
+          <p className="text-center text-gray-400 text-sm">
             Don&apos;t have an account?{' '}
             <Link
               href="/register"
-              className="text-accent-primary hover:text-accent-light font-bold transition"
+              className="text-accent-primary hover:text-accent-light font-semibold transition"
             >
-              Create one here →
+              Register here
             </Link>
           </p>
-
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-gray-500 text-xs mt-8 font-light">
+          © 2024 InternHub. All rights reserved.
+        </p>
       </div>
     </div>
   );
