@@ -122,7 +122,7 @@ body {
 
 .animate-scan-line {
   position: relative;
-  overflow: visible;
+  overflow: clip;
 }
 
 .animate-scan-line::before {
@@ -137,7 +137,6 @@ body {
   animation: scan-line 6s linear infinite;
   z-index: 0;
   pointer-events: none;
-  overflow: hidden;
 }
 
 .animate-scan-line > * {
