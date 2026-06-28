@@ -61,7 +61,7 @@ body {
 }
 
 .animate-gradient-shift {
-  background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 25%, #0F0F0F 50%, #1A1A1A 75%, #0F0F0F 100%);
+  background: linear-gradient(135deg, #0F0F0F 0%, #1A1A1A 20%, #0F0F0F 40%, #1A1A1A 60%, #0F0F0F 80%, #1A1A1A 100%);
   background-size: 400% 400%;
-  animation: gradient-shift 15s ease infinite;
+  animation: gradient-shift 10s ease infinite;
 }

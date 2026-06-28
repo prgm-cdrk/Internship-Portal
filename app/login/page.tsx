@@ -42,14 +42,34 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Subtle Animated Gradient Background */}
+      {/* Animated Gradient Background */}
       <div className="absolute inset-0 animate-gradient-shift"></div>
       
-      {/* Animated Geometric Background Elements */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl animate-float"></div>
-      <div className="absolute bottom-32 left-10 w-48 h-48 rounded-full bg-accent-primary/5 blur-3xl animate-pulse_slow"></div>
-      <div className="absolute top-1/3 left-1/4 w-32 h-32 rounded-full border border-accent-primary/10 animate-rotate_slow"></div>
-      <div className="absolute bottom-1/4 right-1/3 w-40 h-40 rounded-full bg-dark-800/20 blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
+      {/* Large floating orbs */}
+      <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-accent-primary/8 blur-[100px] animate-float"></div>
+      <div className="absolute bottom-20 left-5 w-72 h-72 rounded-full bg-accent-primary/6 blur-[80px] animate-float" style={{ animationDelay: '3s' }}></div>
+      <div className="absolute top-1/2 left-1/3 w-56 h-56 rounded-full bg-white/4 blur-[60px] animate-pulse_slow"></div>
+      
+      {/* Rotating ring */}
+      <div className="absolute top-1/4 left-1/5 w-40 h-40 rounded-full border-2 border-accent-primary/15 animate-rotate_slow"></div>
+      <div className="absolute bottom-1/3 right-1/4 w-56 h-56 rounded-full border border-accent-primary/10 animate-rotate_slow" style={{ animationDuration: '30s', animationDirection: 'reverse' }}></div>
+      
+      {/* Floating geometric shapes */}
+      <div className="absolute top-32 left-1/4 w-4 h-4 bg-accent-primary/30 rotate-45 animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute bottom-40 right-1/3 w-3 h-3 bg-accent-primary/25 rotate-12 animate-float" style={{ animationDelay: '4s' }}></div>
+      <div className="absolute top-1/3 right-1/5 w-5 h-5 bg-white/10 rotate-[30deg] animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute bottom-1/4 left-1/3 w-3 h-3 bg-accent-primary/20 rotate-[60deg] animate-float" style={{ animationDelay: '5s' }}></div>
+      
+      {/* Glowing lines */}
+      <div className="absolute top-0 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-accent-primary/20 to-transparent animate-pulse_slow"></div>
+      <div className="absolute bottom-0 right-1/3 w-px h-40 bg-gradient-to-t from-transparent via-accent-primary/15 to-transparent animate-pulse_slow" style={{ animationDelay: '2s' }}></div>
+      
+      {/* Floating particles */}
+      <div className="absolute top-20 left-10 w-2 h-2 rounded-full bg-accent-primary/40 animate-float" style={{ animationDelay: '0.5s' }}></div>
+      <div className="absolute top-40 right-20 w-1.5 h-1.5 rounded-full bg-accent-primary/30 animate-float" style={{ animationDelay: '1.5s' }}></div>
+      <div className="absolute bottom-32 left-1/4 w-2 h-2 rounded-full bg-white/20 animate-float" style={{ animationDelay: '2.5s' }}></div>
+      <div className="absolute top-1/2 right-10 w-1.5 h-1.5 rounded-full bg-accent-primary/35 animate-float" style={{ animationDelay: '3.5s' }}></div>
+      <div className="absolute bottom-20 right-1/5 w-2 h-2 rounded-full bg-accent-primary/25 animate-float" style={{ animationDelay: '4.5s' }}></div>
 
       <div className="relative w-full max-w-md z-10">
         
