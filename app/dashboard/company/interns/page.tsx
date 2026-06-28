@@ -1,5 +1,5 @@
-// Interns page - shows all hired/accepted applicants
-// Displays intern name, email, internship, and applied date
+// Interns page - shows all hired interns with start dates
+// Displays intern name, email, internship, start date, and resume
 
 'use client';
 
@@ -9,9 +9,12 @@ import { useState, useEffect } from 'react';
 
 type Intern = {
   id: number;
+  applicationId: number;
   name: string;
   email: string;
   internship: string;
+  startDate: string;
+  resumeUrl: string | null;
 };
 
 export default function InternsPage() {
@@ -20,6 +23,7 @@ export default function InternsPage() {
   const [interns, setInterns] = useState<Intern[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -55,7 +59,7 @@ export default function InternsPage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white tracking-wide">Interns</h1>
-          <p className="text-neutral-500 text-sm mt-1">Hired applicants managing their tasks</p>
+          <p className="text-neutral-500 text-sm mt-1">Hired applicants with assigned start dates</p>
         </div>
 
         {error && (
@@ -66,36 +70,95 @@ export default function InternsPage() {
 
         {interns.length === 0 ? (
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl px-5 py-16 text-center">
-            <p className="text-neutral-500">No hired interns yet.</p>
-            <p className="text-neutral-600 text-xs mt-1">Interns will appear here once you accept their application.</p>
+            <p className="text-neutral-500">No interns yet.</p>
+            <p className="text-neutral-600 text-xs mt-1">Interns appear here once you accept their application and set a start date.</p>
           </div>
         ) : (
-          <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-neutral-800">
-                  <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Intern</th>
-                  <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Email</th>
-                  <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Internship</th>
-                </tr>
-              </thead>
-              <tbody>
-                {interns.map((intern) => (
-                  <tr key={intern.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-400 text-sm font-medium shrink-0">
+          <div className="space-y-3">
+            {interns.map((intern) => {
+              const isExpanded = expandedId === intern.id;
+              return (
+                <div
+                  key={intern.id}
+                  className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden transition-colors hover:bg-neutral-800/50"
+                >
+                  {/* Card header */}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : intern.id)}
+                    className="w-full p-5 text-left"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black text-sm font-medium shrink-0">
                           {intern.name.charAt(0).toUpperCase()}
                         </div>
-                        <p className="text-white text-sm font-medium">{intern.name}</p>
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium">{intern.name}</p>
+                          <p className="text-neutral-500 text-xs">{intern.email}</p>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-5 py-3 text-neutral-400 text-sm">{intern.email}</td>
-                    <td className="px-5 py-3 text-neutral-400 text-sm">{intern.internship}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-neutral-500 text-xs hidden sm:block">{intern.internship}</span>
+                        <span className="text-neutral-500 text-xs hidden sm:block">Starts: {new Date(intern.startDate).toLocaleDateString()}</span>
+                        <svg
+                          className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Expanded content */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 border-t border-neutral-800">
+                      <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Intern details */}
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Intern Details</p>
+                          <div className="bg-neutral-800 rounded-lg p-4 space-y-2">
+                            <p className="text-white text-sm"><span className="text-neutral-500">Name:</span> {intern.name}</p>
+                            <p className="text-white text-sm"><span className="text-neutral-500">Email:</span> {intern.email}</p>
+                            <p className="text-white text-sm"><span className="text-neutral-500">Internship:</span> {intern.internship}</p>
+                            <p className="text-white text-sm"><span className="text-neutral-500">Start Date:</span> {new Date(intern.startDate).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+
+                        {/* Resume */}
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Resume</p>
+                          <div className="bg-neutral-800 rounded-lg p-4">
+                            {intern.resumeUrl ? (
+                              <div className="space-y-3">
+                                <a
+                                  href={intern.resumeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-sm text-neutral-300 hover:bg-neutral-600 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  View Resume (PDF)
+                                </a>
+                                <iframe
+                                  src={intern.resumeUrl}
+                                  className="w-full h-64 rounded-lg border border-neutral-700 bg-white"
+                                  title={`${intern.name} Resume`}
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-neutral-500 text-sm">No resume uploaded</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

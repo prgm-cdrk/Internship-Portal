@@ -81,7 +81,8 @@ model Application {
   internshipId Int
   internship Internship @relation(fields: [internshipId], references: [id])
   status Status
-  resumeUrl String? // PDF resume path, e.g. /uploads/resumes/abc.pdf
+  resumeUrl String?
+  startDate DateTime? // Set when status is ACCEPTED — triggers transfer to Interns page
   documents Document[]
   appliedAt DateTime @default(now())
 

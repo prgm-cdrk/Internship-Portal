@@ -1,5 +1,6 @@
-// API to fetch accepted applicants for the logged-in company
-// Returns users who have an application with status ACCEPTED
+// API to fetch hired interns for the logged-in company
+// Returns users who have ACCEPTED applications with a start date set
+// These are the ones that have been "transferred" from the Applicants page
 
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@/lib/auth';
@@ -21,18 +22,18 @@ export async function GET() {
       return Response.json({ error: 'No company found' }, { status: 404 });
     }
 
-    // Get all internship IDs for this company
     const internships = await prisma.internship.findMany({
       where: { companyId: company.id },
       select: { id: true }
     });
     const internshipIds = internships.map(i => i.id);
 
-    // Get unique users with ACCEPTED applications
+    // Only return ACCEPTED applications that have a startDate set
     const acceptedApplications = await prisma.application.findMany({
       where: {
         internshipId: { in: internshipIds },
-        status: 'ACCEPTED'
+        status: 'ACCEPTED',
+        startDate: { not: null }
       },
       include: {
         user: {
@@ -44,7 +45,6 @@ export async function GET() {
       }
     });
 
-    // Deduplicate users (same user might have multiple accepted applications)
     const seen = new Set<number>();
     const interns = acceptedApplications
       .filter(app => {
@@ -54,9 +54,12 @@ export async function GET() {
       })
       .map(app => ({
         id: app.user.id,
+        applicationId: app.id,
         name: app.user.name,
         email: app.user.email,
-        internship: app.internship.title
+        internship: app.internship.title,
+        startDate: app.startDate,
+        resumeUrl: app.resumeUrl
       }));
 
     return Response.json({ interns }, { status: 200 });

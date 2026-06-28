@@ -1,5 +1,6 @@
 // Applicant Pipeline page - shows all applicants who applied to the company's internships
-// Company managers can expand each applicant to view resume and update status
+// Accepted applicants with a start date show a "View Intern" button
+// Accepted applicants without a start date show a date picker to set it
 
 'use client';
 
@@ -12,6 +13,7 @@ type Application = {
   status: string;
   appliedAt: string;
   resumeUrl: string | null;
+  startDate: string | null;
   user: { id: number; name: string; email: string };
   internship: { id: number; title: string };
 };
@@ -35,6 +37,8 @@ export default function ApplicantsPage() {
   const [filter, setFilter] = useState('ALL');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [settingDateId, setSettingDateId] = useState<number | null>(null);
+  const [startDateValue, setStartDateValue] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -86,6 +90,36 @@ export default function ApplicantsPage() {
     }
   };
 
+  const handleSetStartDate = async (applicationId: number) => {
+    setError('');
+    if (!startDateValue) {
+      setError('Please select a start date');
+      return;
+    }
+    setSettingDateId(applicationId);
+    try {
+      const response = await fetch('/api/application/set-start-date', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId, startDate: startDateValue })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Failed to set start date');
+        setSettingDateId(null);
+        return;
+      }
+      setApplications(prev =>
+        prev.map(app => app.id === applicationId ? { ...app, startDate: startDateValue } : app)
+      );
+      setSettingDateId(null);
+      setStartDateValue('');
+    } catch {
+      setError('Failed to set start date');
+      setSettingDateId(null);
+    }
+  };
+
   const filteredApplications = filter === 'ALL'
     ? applications
     : applications.filter(app => app.status === filter);
@@ -134,13 +168,46 @@ export default function ApplicantsPage() {
             {filteredApplications.map((app) => {
               const isExpanded = expandedId === app.id;
               const isUpdating = updatingId === app.id;
+              const isAcceptedWithDate = app.status === 'ACCEPTED' && app.startDate;
+              const isAcceptedNoDate = app.status === 'ACCEPTED' && !app.startDate;
 
+              // Accepted with start date — compact row with View Intern button
+              if (isAcceptedWithDate) {
+                return (
+                  <div
+                    key={app.id}
+                    className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center justify-between gap-4 hover:bg-neutral-800/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black text-sm font-medium shrink-0">
+                        {app.user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-white text-sm font-medium">{app.user.name}</p>
+                        <p className="text-neutral-500 text-xs">{app.user.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-neutral-500 text-xs hidden sm:block">{app.internship.title}</span>
+                      <span className="text-neutral-500 text-xs hidden sm:block">Starts: {new Date(app.startDate).toLocaleDateString()}</span>
+                      <button
+                        onClick={() => router.push('/dashboard/company/interns')}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-neutral-200 transition-colors"
+                      >
+                        View Intern
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
+              // Regular or accepted without date — expandable card
               return (
                 <div
                   key={app.id}
                   className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden transition-colors hover:bg-neutral-800/50"
                 >
-                  {/* Card header — clickable */}
+                  {/* Card header */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : app.id)}
                     className="w-full p-5 text-left"
@@ -177,7 +244,7 @@ export default function ApplicantsPage() {
                   {isExpanded && (
                     <div className="px-5 pb-5 border-t border-neutral-800">
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Left column: Applicant info + Status updater */}
+                        {/* Left column: Applicant info + Status updater + Start date */}
                         <div className="space-y-4">
                           <div>
                             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Applicant Details</p>
@@ -212,6 +279,28 @@ export default function ApplicantsPage() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Set Start Date — only for ACCEPTED without startDate */}
+                          {isAcceptedNoDate && (
+                            <div>
+                              <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Set Start Date</p>
+                              <div className="bg-neutral-800 rounded-lg p-4 flex items-center gap-3">
+                                <input
+                                  type="date"
+                                  value={startDateValue}
+                                  onChange={(e) => setStartDateValue(e.target.value)}
+                                  className="flex-1 px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-neutral-500 transition-colors"
+                                />
+                                <button
+                                  onClick={() => handleSetStartDate(app.id)}
+                                  disabled={!startDateValue || settingDateId === app.id}
+                                  className="px-4 py-2 rounded-lg text-xs font-medium bg-white text-black hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                                >
+                                  {settingDateId === app.id ? 'Setting...' : 'Set'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Right column: Resume */}
