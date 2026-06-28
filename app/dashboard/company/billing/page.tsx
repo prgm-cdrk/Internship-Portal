@@ -1,28 +1,38 @@
+// This is the Billing & Subscription page - where company managers can view and upgrade their plan
+// It displays the current plan (FREE or PRO) with pricing and features
+// Users can upgrade to PRO which redirects to PayMongo checkout
+
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';       // useSession gets current user session
+import { useRouter } from 'next/navigation';         // useRouter for redirecting
+import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
 
 export default function BillingPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession();   // Get session and loading status
   const router = useRouter();
-  const [subscription, setSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [upgrading, setUpgrading] = useState(false);
 
+  // State
+  const [subscription, setSubscription] = useState(null);  // Current subscription data
+  const [loading, setLoading] = useState(true);     // Loading state while fetching
+  const [error, setError] = useState('');           // Error messages
+  const [upgrading, setUpgrading] = useState(false);  // Upgrade button loading state
+
+  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
 
+    // Wait until session is loaded before fetching
     if (status === 'loading') return;
 
+    // Fetch subscription data when session is ready
     fetchSubscription();
   }, [status]);
 
+  // Fetch the company's current subscription from the database
   const fetchSubscription = async () => {
     try {
       const response = await fetch('/api/subscription/get');
@@ -42,11 +52,13 @@ export default function BillingPage() {
     }
   };
 
+  // Handle upgrade to PRO plan - creates PayMongo checkout session
   const handleUpgrade = async () => {
     setUpgrading(true);
     setError('');
 
     try {
+      // Send request to create PayMongo checkout session
       const response = await fetch('/api/payment/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -55,13 +67,14 @@ export default function BillingPage() {
 
       const data = await response.json();
 
+      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to start upgrade');
         setUpgrading(false);
         return;
       }
 
-      // Redirect to PayMongo checkout
+      // Redirect to PayMongo checkout page
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       }
@@ -71,10 +84,12 @@ export default function BillingPage() {
     }
   };
 
+  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
     return <p>Loading...</p>;
   }
 
+  // Get current plan name (default to FREE)
   const currentPlan = subscription?.plan || 'FREE';
 
   return (
@@ -82,9 +97,10 @@ export default function BillingPage() {
       <h1>Billing & Subscription</h1>
       <p>Manage your subscription and upgrade to unlock more features.</p>
 
+      {/* Display error message if any */}
       {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
 
-      {/* Current Plan Info */}
+      {/* Current Plan Info - shows which plan the user is on */}
       <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
         <h2>Current Plan</h2>
         <p><strong>Plan:</strong> {currentPlan}</p>
@@ -94,9 +110,9 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Pricing Plans */}
+      {/* Pricing Plans - side by side comparison */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
-        {/* FREE Plan */}
+        {/* FREE Plan Card */}
         <div
           style={{
             border: currentPlan === 'FREE' ? '3px solid #007bff' : '1px solid #ddd',
@@ -114,6 +130,7 @@ export default function BillingPage() {
             <li>❌ Task management</li>
             <li>❌ Priority support</li>
           </ul>
+          {/* Show "Current Plan" button if user is on FREE */}
           {currentPlan === 'FREE' && (
             <button
               disabled
@@ -133,7 +150,7 @@ export default function BillingPage() {
           )}
         </div>
 
-        {/* PRO Plan */}
+        {/* PRO Plan Card */}
         <div
           style={{
             border: currentPlan === 'PRO' ? '3px solid #28a745' : '1px solid #ddd',
@@ -143,6 +160,7 @@ export default function BillingPage() {
             position: 'relative'
           }}
         >
+          {/* Popular badge */}
           <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#ff9800', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
             Popular
           </div>
@@ -156,6 +174,7 @@ export default function BillingPage() {
             <li>✅ Task management</li>
             <li>✅ Priority support</li>
           </ul>
+          {/* Show "Current Plan" if on PRO, otherwise show "Upgrade to PRO" button */}
           {currentPlan === 'PRO' ? (
             <button
               disabled
@@ -194,7 +213,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      {/* Trial Info */}
+      {/* Trial Info - 14-day free trial banner */}
       <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
         <h3>🎁 14-Day Free Trial</h3>
         <p>New PRO subscribers get 14 days of free access to try all PRO features risk-free. No credit card required for the trial.</p>
