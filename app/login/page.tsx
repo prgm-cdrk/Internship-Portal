@@ -40,7 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
       
       {/* Minimal Geometric Accents */}
       <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
@@ -49,14 +49,14 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md z-10">
         
         {/* Main Card */}
-        <div className="bg-gray-800 border border-gray-700 rounded-2xl p-10 shadow-2xl">
+        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-10 shadow-2xl">
           
           {/* Header */}
           <div className="mb-12">
             <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
               Login
             </h1>
-            <p className="text-gray-400 text-sm font-light">
+            <p className="text-dark-400 text-sm font-light">
               Access your internship portal
             </p>
           </div>
@@ -73,7 +73,7 @@ export default function LoginPage() {
             
             {/* Email Field */}
             <div>
-              <label className="block text-gray-300 font-medium mb-3 text-sm">
+              <label className="block text-dark-200 font-medium mb-3 text-sm">
                 Email
               </label>
               <input
@@ -81,14 +81,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
+                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
                 required
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-gray-300 font-medium mb-3 text-sm">
+              <label className="block text-dark-200 font-medium mb-3 text-sm">
                 Password
               </label>
               <input
@@ -96,7 +96,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
+                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
                 required
               />
             </div>
@@ -113,13 +113,13 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center my-8">
-            <div className="flex-1 border-t border-gray-700"></div>
-            <span className="px-3 text-gray-500 text-xs">or</span>
-            <div className="flex-1 border-t border-gray-700"></div>
+            <div className="flex-1 border-t border-dark-700"></div>
+            <span className="px-3 text-dark-400 text-xs">or</span>
+            <div className="flex-1 border-t border-dark-700"></div>
           </div>
 
           {/* Register Link */}
-          <p className="text-center text-gray-400 text-sm">
+          <p className="text-center text-dark-400 text-sm">
             Don&apos;t have an account?{' '}
             <Link
               href="/register"
@@ -131,7 +131,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-gray-500 text-xs mt-8 font-light">
+        <p className="text-center text-dark-400 text-xs mt-8 font-light">
           © 2024 InternHub. All rights reserved.
         </p>
       </div>
