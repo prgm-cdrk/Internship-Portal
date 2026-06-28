@@ -1,58 +1,47 @@
-// This is the Internship Posting form page - where company managers create new internship listings
-// It collects title, description, available slots, and application deadline
-// On submit, it sends the data to the API which saves it to the database
-// After creation, the company is redirected to their dashboard
+// Internship Posting form page - create new internship listings
+// Collects title, description, available slots, and application deadline
+// On submit, sends data to API which saves to database
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for form fields, useEffect for auth check
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function NewInternshipPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Form state
-  const [title, setTitle] = useState('');           // Internship job title
-  const [description, setDescription] = useState(''); // Job description and responsibilities
-  const [slots, setSlots] = useState('');           // Number of available slots
-  const [deadline, setDeadline] = useState('');     // Application deadline date
-  const [error, setError] = useState('');           // Error messages
-  const [loading, setLoading] = useState(false);    // Submit button loading state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [slots, setSlots] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
+    if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Show loading while session is being fetched
   if (status === 'loading') {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();     // Prevent page reload on form submit
-    setError('');           // Clear any previous errors
-    setLoading(true);       // Show loading state on button
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    // Validate that all required fields are filled
     if (!title || !description || !slots || !deadline) {
       setError('All fields are required');
       setLoading(false);
       return;
     }
-
-    // Validate that slots is a positive number
     if (parseInt(slots) < 1) {
       setError('Slots must be at least 1');
       setLoading(false);
       return;
     }
-
-    // Validate that deadline is in the future
     if (new Date(deadline) <= new Date()) {
       setError('Deadline must be a future date');
       setLoading(false);
@@ -60,125 +49,67 @@ export default function NewInternshipPage() {
     }
 
     try {
-      // Send internship data to the API endpoint
       const response = await fetch('/api/internship/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          description,
-          slots: parseInt(slots),
-          deadline
-        })
+        body: JSON.stringify({ title, description, slots: parseInt(slots), deadline })
       });
-
-      // Parse the response from the server
       const data = await response.json();
-
-      // If the server returned an error, display it
       if (!response.ok) {
         setError(data.error || 'Failed to create internship');
         setLoading(false);
         return;
       }
-
-      // Internship created successfully, redirect to company dashboard
-      router.push('/dashboard/company');
+      router.push('/dashboard/company/internships');
     } catch (err) {
-      // Handle network or unexpected errors
       setError('Failed to create internship');
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <h1>Post New Internship</h1>
-      <p>Fill in the details for your internship listing.</p>
+    <div className="p-8">
+      <div className="max-w-2xl">
+        <h1 className="text-xl font-bold text-white mb-6">Post New Internship</h1>
 
-      {/* Display error message if validation or API fails */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit}>
-        {/* Internship title - required field */}
-        <div style={{ marginBottom: '15px' }}>
-          <label><strong>Title:</strong></label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}   // Update title state on input
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-            placeholder="e.g. Software Engineering Intern"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-5">
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Title</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Software Engineering Intern" className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors" />
+          </div>
 
-        {/* Job description - required field */}
-        <div style={{ marginBottom: '15px' }}>
-          <label><strong>Description:</strong></label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}   // Update description state on input
-            style={{ width: '100%', padding: '8px', marginTop: '5px', minHeight: '150px' }}
-            placeholder="Describe the role, responsibilities, and requirements..."
-          />
-        </div>
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Description</label>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the role, responsibilities, and requirements..." rows={6} className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors resize-none" />
+          </div>
 
-        {/* Number of available slots - required field */}
-        <div style={{ marginBottom: '15px' }}>
-          <label><strong>Available Slots:</strong></label>
-          <input
-            type="number"
-            value={slots}
-            onChange={(e) => setSlots(e.target.value)}   // Update slots state on input
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-            min="1"
-            placeholder="Number of positions available"
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Available Slots</label>
+              <input type="number" value={slots} onChange={(e) => setSlots(e.target.value)} min="1" placeholder="Number of positions" className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors" />
+            </div>
+            <div>
+              <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Application Deadline</label>
+              <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-neutral-500 transition-colors" />
+            </div>
+          </div>
 
-        {/* Application deadline - required field */}
-        <div style={{ marginBottom: '15px' }}>
-          <label><strong>Application Deadline:</strong></label>
-          <input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}   // Update deadline state on input
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-          />
-        </div>
-
-        {/* Submit button - disabled while submitting */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            type="submit"
-            disabled={loading}    // Disable button to prevent double submit
-            style={{
-              padding: '10px 20px',
-              cursor: 'pointer',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            {loading ? 'Posting...' : 'Post Internship'}   {/* Show loading text while submitting */}
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard/company')}   // Cancel and go back to dashboard
-            style={{
-              padding: '10px 20px',
-              cursor: 'pointer',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={loading} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50">
+              {loading ? 'Posting...' : 'Post Internship'}
+            </button>
+            <button type="button" onClick={() => router.push('/dashboard/company/internships')} className="px-4 py-2 bg-neutral-800 text-neutral-400 text-sm font-medium rounded-lg hover:bg-neutral-700 hover:text-white transition-colors">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

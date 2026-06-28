@@ -1,14 +1,13 @@
-// This is the Announcements page - where company managers post updates for their interns
-// It displays all announcements with title, content, and date
-// Company managers can create new announcements using a form
+// Announcements page - post updates for interns
+// Displays all announcements with title, content, and date
+// Company managers can create new announcements
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data and form, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for an announcement
 type Announcement = {
   id: number;
   title: string;
@@ -17,48 +16,34 @@ type Announcement = {
 };
 
 export default function AnnouncementsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
 
-  // State
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);  // List of announcements
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-  const [showForm, setShowForm] = useState(false);  // Toggle create announcement form
-
-  // Form state
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
+    if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Fetch announcements when session is ready
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchAnnouncements();
-    }
+    if (status === 'authenticated') fetchAnnouncements();
   }, [status]);
 
-  // Fetch all announcements for this company
   const fetchAnnouncements = async () => {
     try {
       const response = await fetch('/api/announcement/get');
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to load announcements');
         setLoading(false);
         return;
       }
-
-      // Set announcements data
       setAnnouncements(data.announcements);
       setLoading(false);
     } catch (err) {
@@ -67,37 +52,27 @@ export default function AnnouncementsPage() {
     }
   };
 
-  // Handle creating a new announcement
   const handleCreateAnnouncement = async (e: React.FormEvent) => {
-    e.preventDefault();     // Prevent page reload
-    setError('');           // Clear previous errors
-    setSaving(true);        // Show saving state
-
-    // Validate required fields
+    e.preventDefault();
+    setError('');
+    setSaving(true);
     if (!title || !content) {
       setError('Title and content are required');
       setSaving(false);
       return;
     }
-
     try {
-      // Send announcement data to the API endpoint
       const response = await fetch('/api/announcement/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content })
       });
-
       const data = await response.json();
-
-      // If the server returned an error, display it
       if (!response.ok) {
         setError(data.error || 'Failed to create announcement');
         setSaving(false);
         return;
       }
-
-      // Clear form, hide form, and refresh announcements list
       setTitle('');
       setContent('');
       setShowForm(false);
@@ -109,102 +84,54 @@ export default function AnnouncementsPage() {
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Announcements</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}   // Toggle the create announcement form
-          style={{
-            padding: '10px 20px',
-            cursor: 'pointer',
-            backgroundColor: showForm ? '#6c757d' : '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-          }}
-        >
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-white">Announcements</h1>
+        <button onClick={() => setShowForm(!showForm)} className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${showForm ? 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700 hover:text-white' : 'bg-white text-black hover:bg-neutral-200'}`}>
           {showForm ? 'Cancel' : '+ New Announcement'}
         </button>
       </div>
 
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {/* Create Announcement Form - shown when showForm is true */}
-      {showForm && (
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-          <h3>Post New Announcement</h3>
-          <form onSubmit={handleCreateAnnouncement}>
-            {/* Announcement title */}
-            <div style={{ marginBottom: '15px' }}>
-              <label><strong>Title:</strong></label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-                placeholder="e.g. Office Holiday Schedule"
-              />
-            </div>
-
-            {/* Announcement content */}
-            <div style={{ marginBottom: '15px' }}>
-              <label><strong>Content:</strong></label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                style={{ width: '100%', padding: '8px', marginTop: '5px', minHeight: '150px' }}
-                placeholder="Write your announcement here..."
-              />
-            </div>
-
-            {/* Submit button */}
-            <button
-              type="submit"
-              disabled={saving}
-              style={{
-                padding: '10px 20px',
-                cursor: 'pointer',
-                backgroundColor: '#28a745',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-              }}
-            >
-              {saving ? 'Posting...' : 'Post Announcement'}
-            </button>
-          </form>
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
-      {/* Show message if no announcements exist */}
+      {/* Create Announcement Form */}
+      {showForm && (
+        <form onSubmit={handleCreateAnnouncement} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 mb-6 space-y-4">
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Title</label>
+            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Office Holiday Schedule" className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Content</label>
+            <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your announcement here..." rows={6} className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors resize-none" />
+          </div>
+          <button type="submit" disabled={saving} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50">
+            {saving ? 'Posting...' : 'Post Announcement'}
+          </button>
+        </form>
+      )}
+
+      {/* Announcements List */}
       {announcements.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>No announcements yet.</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
+          <p className="text-neutral-500">No announcements yet.</p>
         </div>
       ) : (
-        /* Announcements list */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div className="space-y-2">
           {announcements.map((announcement) => (
-            <div
-              key={announcement.id}
-              style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <h3 style={{ margin: '0 0 10px 0' }}>{announcement.title}</h3>
-              </div>
-              <p style={{ margin: '0 0 10px 0', color: '#333', lineHeight: '1.5' }}>
-                {announcement.content}
-              </p>
-              <p style={{ margin: '0', fontSize: '12px', color: '#999' }}>
-                Posted on {new Date(announcement.createdAt).toLocaleDateString()}
-              </p>
+            <div key={announcement.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
+              <h3 className="text-white font-medium text-sm">{announcement.title}</h3>
+              <p className="text-neutral-400 text-xs mt-2 leading-relaxed">{announcement.content}</p>
+              <p className="text-neutral-600 text-xs mt-3">{new Date(announcement.createdAt).toLocaleDateString()}</p>
             </div>
           ))}
         </div>

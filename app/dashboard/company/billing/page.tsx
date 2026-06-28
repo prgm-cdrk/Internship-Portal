@@ -1,80 +1,61 @@
-// This is the Billing & Subscription page - where company managers can view and upgrade their plan
-// It displays the current plan (FREE, BASIC, or PRO) with pricing and features
+// Billing & Subscription page - view and upgrade plan
+// Displays current plan (FREE, BASIC, or PRO) with pricing and features
 // Users can upgrade to BASIC or PRO which redirects to PayMongo checkout
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function BillingPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [upgrading, setUpgrading] = useState(false);
 
-  // State
-  const [subscription, setSubscription] = useState(null);  // Current subscription data
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-  const [upgrading, setUpgrading] = useState(false);  // Upgrade button loading state
-
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-
-    // Wait until session is loaded before fetching
     if (status === 'loading') return;
-
-    // Fetch subscription data when session is ready
     fetchSubscription();
   }, [status]);
 
-  // Fetch the company's current subscription from the database
   const fetchSubscription = async () => {
     try {
       const response = await fetch('/api/subscription/get');
       const data = await response.json();
-
       if (response.ok) {
         setSubscription(data.subscription);
       } else {
-        // First time — no subscription yet, default to FREE
         setSubscription({ plan: 'FREE', status: 'ACTIVE' });
       }
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching subscription:', err);
       setSubscription({ plan: 'FREE', status: 'ACTIVE' });
       setLoading(false);
     }
   };
 
-  // Handle upgrade to selected plan - creates PayMongo checkout session
   const handleUpgrade = async (selectedPlan: string) => {
     setUpgrading(true);
     setError('');
-
     try {
-      // Send request to create PayMongo checkout session
       const response = await fetch('/api/payment/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: selectedPlan })
       });
-
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to start upgrade');
         setUpgrading(false);
         return;
       }
-
-      // Redirect to PayMongo checkout page
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       }
@@ -84,194 +65,103 @@ export default function BillingPage() {
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
-  // Get current plan name (default to FREE)
   const currentPlan = subscription?.plan || 'FREE';
 
+  const plans = [
+    {
+      name: 'FREE',
+      price: '₱0',
+      features: ['1 internship posting', 'Up to 3 applicants', 'Basic features'],
+      unavailable: ['Task management', 'Priority support'],
+      current: currentPlan === 'FREE',
+    },
+    {
+      name: 'BASIC',
+      price: '₱299',
+      features: ['10 internship postings', 'Up to 10 applicants', 'Task management', 'Basic features'],
+      unavailable: ['Priority support'],
+      current: currentPlan === 'BASIC',
+    },
+    {
+      name: 'PRO',
+      price: '₱499',
+      features: ['Unlimited postings', 'Unlimited applicants', 'Task management', 'Advanced features', 'Priority support'],
+      unavailable: [],
+      current: currentPlan === 'PRO',
+      popular: true,
+    },
+  ];
+
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>Billing & Subscription</h1>
-      <p>Manage your subscription and upgrade to unlock more features.</p>
+    <div className="p-8">
+      <h1 className="text-xl font-bold text-white mb-6">Billing & Subscription</h1>
 
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
 
-      {/* Current Plan Info - shows which plan the user is on */}
-      <div style={{ marginBottom: '40px', padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
-        <h2>Current Plan</h2>
-        <p><strong>Plan:</strong> {currentPlan}</p>
-        <p><strong>Status:</strong> {subscription?.status || 'ACTIVE'}</p>
+      {/* Current Plan */}
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 mb-8">
+        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Current Plan</p>
+        <div className="flex items-center gap-4">
+          <p className="text-white text-2xl font-bold">{currentPlan}</p>
+          <span className="px-2 py-0.5 rounded text-xs font-medium bg-white text-black">ACTIVE</span>
+        </div>
         {subscription?.renewalDate && (
-          <p><strong>Renewal Date:</strong> {new Date(subscription.renewalDate).toLocaleDateString()}</p>
+          <p className="text-neutral-500 text-xs mt-2">Renews {new Date(subscription.renewalDate).toLocaleDateString()}</p>
         )}
       </div>
 
-      {/* Pricing Plans - three columns comparison */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-        {/* FREE Plan Card */}
-        <div
-          style={{
-            border: currentPlan === 'FREE' ? '3px solid #007bff' : '1px solid #ddd',
-            padding: '20px',
-            borderRadius: '8px',
-            backgroundColor: currentPlan === 'FREE' ? '#e7f3ff' : '#fff'
-          }}
-        >
-          <h3>FREE Plan</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>₱0/month</p>
-          <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
-            <li>✅ 1 internship posting</li>
-            <li>✅ Up to 3 applicants</li>
-            <li>✅ Basic features</li>
-            <li>❌ Task management</li>
-            <li>❌ Priority support</li>
-          </ul>
-          {/* Show "Current Plan" button if user is on FREE */}
-          {currentPlan === 'FREE' && (
-            <button
-              disabled
-              style={{
-                marginTop: '20px',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#ccc',
-                color: '#666',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'not-allowed'
-              }}
-            >
-              Current Plan
-            </button>
-          )}
-        </div>
+      {/* Plans Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {plans.map((plan) => (
+          <div key={plan.name} className={`bg-neutral-900 border rounded-xl p-6 relative ${plan.current ? 'border-white' : 'border-neutral-800'}`}>
+            {plan.popular && (
+              <span className="absolute top-4 right-4 px-2 py-0.5 bg-white text-black text-[10px] font-bold uppercase rounded">Popular</span>
+            )}
+            <p className="text-xs text-neutral-500 uppercase tracking-wider">{plan.name} Plan</p>
+            <p className="text-3xl font-bold text-white mt-2">{plan.price}<span className="text-sm font-normal text-neutral-500">/mo</span></p>
 
-        {/* BASIC Plan Card */}
-        <div
-          style={{
-            border: currentPlan === 'BASIC' ? '3px solid #28a745' : '1px solid #ddd',
-            padding: '20px',
-            borderRadius: '8px',
-            backgroundColor: currentPlan === 'BASIC' ? '#e8f5e9' : '#fff'
-          }}
-        >
-          <h3>BASIC Plan</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>₱299/month</p>
-          <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
-            <li>✅ 10 internship postings</li>
-            <li>✅ Up to 10 applicants</li>
-            <li>✅ Basic features</li>
-            <li>✅ Task management</li>
-            <li>❌ Priority support</li>
-          </ul>
-          {/* Show "Current Plan" if on BASIC, otherwise show upgrade button */}
-          {currentPlan === 'BASIC' ? (
-            <button
-              disabled
-              style={{
-                marginTop: '20px',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#ccc',
-                color: '#666',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'not-allowed'
-              }}
-            >
-              Current Plan
-            </button>
-          ) : (
-            <button
-              onClick={() => handleUpgrade('BASIC')}
-              disabled={upgrading}
-              style={{
-                marginTop: '20px',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              {upgrading ? 'Processing...' : 'Upgrade to BASIC'}
-            </button>
-          )}
-        </div>
+            <ul className="mt-5 space-y-2">
+              {plan.features.map((f) => (
+                <li key={f} className="text-xs text-neutral-400 flex items-center gap-2">
+                  <svg className="w-3.5 h-3.5 text-white shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  {f}
+                </li>
+              ))}
+              {plan.unavailable.map((f) => (
+                <li key={f} className="text-xs text-neutral-600 flex items-center gap-2">
+                  <svg className="w-3.5 h-3.5 text-neutral-700 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  {f}
+                </li>
+              ))}
+            </ul>
 
-        {/* PRO Plan Card */}
-        <div
-          style={{
-            border: currentPlan === 'PRO' ? '3px solid #28a745' : '1px solid #ddd',
-            padding: '20px',
-            borderRadius: '8px',
-            backgroundColor: currentPlan === 'PRO' ? '#e8f5e9' : '#fff',
-            position: 'relative'
-          }}
-        >
-          {/* Popular badge */}
-          <div style={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: '#ff9800', color: 'white', padding: '5px 10px', borderRadius: '5px', fontSize: '12px' }}>
-            Popular
+            <div className="mt-6">
+              {plan.current ? (
+                <button disabled className="w-full py-2 bg-neutral-800 text-neutral-500 text-sm font-medium rounded-lg cursor-not-allowed">
+                  Current Plan
+                </button>
+              ) : (
+                <button onClick={() => handleUpgrade(plan.name)} disabled={upgrading} className="w-full py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50">
+                  {upgrading ? 'Processing...' : `Upgrade to ${plan.name}`}
+                </button>
+              )}
+            </div>
           </div>
-          <h3>PRO Plan</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>₱499/month</p>
-          <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
-            <li>✅ Unlimited internship postings</li>
-            <li>✅ Unlimited applicants</li>
-            <li>✅ Advanced features</li>
-            <li>✅ Task management</li>
-            <li>✅ Priority support</li>
-          </ul>
-          {/* Show "Current Plan" if on PRO, otherwise show upgrade button */}
-          {currentPlan === 'PRO' ? (
-            <button
-              disabled
-              style={{
-                marginTop: '20px',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#ccc',
-                color: '#666',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'not-allowed'
-              }}
-            >
-              Current Plan
-            </button>
-          ) : (
-            <button
-              onClick={() => handleUpgrade('PRO')}
-              disabled={upgrading}
-              style={{
-                marginTop: '20px',
-                width: '100%',
-                padding: '10px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
-              {upgrading ? 'Processing...' : 'Upgrade to PRO'}
-            </button>
-          )}
-        </div>
+        ))}
       </div>
 
-      {/* Trial Info - 14-day free trial banner */}
-      <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
-        <h3>🎁 14-Day Free Trial</h3>
-        <p>New subscribers get 14 days of free access to try all features risk-free. No credit card required for the trial.</p>
+      {/* Trial Banner */}
+      <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 mt-8">
+        <p className="text-white text-sm font-medium">14-Day Free Trial</p>
+        <p className="text-neutral-500 text-xs mt-1">New subscribers get 14 days of free access to try all features risk-free. No credit card required.</p>
       </div>
     </div>
   );

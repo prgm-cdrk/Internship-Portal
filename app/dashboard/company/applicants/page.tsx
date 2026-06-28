@@ -1,77 +1,54 @@
-// This is the Applicant Pipeline page - shows all applicants who applied to the company's internships
-// It fetches applications from /api/application/get
-// Displays applicant name, email, which internship they applied to, and their status
-// Company managers can see the pipeline and update application status
+// Applicant Pipeline page - shows all applicants who applied to the company's internships
+// Fetches applications from /api/application/get
+// Displays applicant name, email, internship, and status
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for an application
 type Application = {
   id: number;
-  status: string;          // APPLIED, REVIEWED, INTERVIEW, ACCEPTED, REJECTED
+  status: string;
   appliedAt: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-  internship: {
-    id: number;
-    title: string;
-  };
+  user: { id: number; name: string; email: string };
+  internship: { id: number; title: string };
 };
 
-// Status colors for visual indicators
-const statusColors: Record<string, string> = {
-  APPLIED: '#17a2b8',      // Blue
-  REVIEWED: '#ffc107',     // Yellow
-  INTERVIEW: '#fd7e14',    // Orange
-  ACCEPTED: '#28a745',     // Green
-  REJECTED: '#dc3545',     // Red
+const statusStyles: Record<string, string> = {
+  APPLIED: 'bg-neutral-700 text-neutral-300 border border-neutral-600',
+  REVIEWED: 'bg-neutral-700 text-neutral-300 border border-neutral-600',
+  INTERVIEW: 'bg-neutral-700 text-white border border-neutral-500',
+  ACCEPTED: 'bg-white text-black border border-white',
+  REJECTED: 'bg-neutral-800 text-neutral-500 border border-neutral-700',
 };
 
 export default function ApplicantsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [filter, setFilter] = useState('ALL');
 
-  // State
-  const [applications, setApplications] = useState<Application[]>([]);  // List of applications
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-  const [filter, setFilter] = useState('ALL');      // Filter by status
-
-  // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
+    if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Fetch applications when session is ready
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchApplications();
-    }
+    if (status === 'authenticated') fetchApplications();
   }, [status]);
 
-  // Fetch all applications for this company's internships
   const fetchApplications = async () => {
     try {
       const response = await fetch('/api/application/get');
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to load applications');
         setLoading(false);
         return;
       }
-
-      // Set applications data
       setApplications(data.applications);
       setLoading(false);
     } catch (err) {
@@ -80,98 +57,62 @@ export default function ApplicantsPage() {
     }
   };
 
-  // Filter applications based on selected status
   const filteredApplications = filter === 'ALL'
     ? applications
     : applications.filter(app => app.status === filter);
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-      <h1>Applicant Pipeline</h1>
-      <p>Manage applicants who applied to your internships.</p>
+    <div className="p-8">
+      <h1 className="text-xl font-bold text-white mb-6">Applicants</h1>
 
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
 
-      {/* Status filter buttons */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {['ALL', 'APPLIED', 'REVIEWED', 'INTERVIEW', 'ACCEPTED', 'REJECTED'].map((statusOption) => (
-          <button
-            key={statusOption}
-            onClick={() => setFilter(statusOption)}   // Set filter to selected status
-            style={{
-              padding: '8px 16px',
-              cursor: 'pointer',
-              backgroundColor: filter === statusOption ? '#007bff' : '#e9ecef',
-              color: filter === statusOption ? 'white' : '#333',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '14px',
-            }}
-          >
-            {statusOption}
+      {/* Filters */}
+      <div className="flex gap-1.5 mb-6 flex-wrap">
+        {['ALL', 'APPLIED', 'REVIEWED', 'INTERVIEW', 'ACCEPTED', 'REJECTED'].map((s) => (
+          <button key={s} onClick={() => setFilter(s)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${filter === s ? 'bg-white text-black' : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-700 hover:text-white'}`}>
+            {s}
           </button>
         ))}
       </div>
 
-      {/* Show message if no applications exist */}
       {filteredApplications.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>{filter === 'ALL' ? 'No applications received yet.' : `No applications with status "${filter}".`}</p>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
+          <p className="text-neutral-500">{filter === 'ALL' ? 'No applications received yet.' : `No applications with status "${filter}".`}</p>
         </div>
       ) : (
-        /* Applications table */
-        <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
+          <table className="w-full">
             <thead>
-              <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #ddd' }}>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Applicant</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Internship</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Applied</th>
+              <tr className="border-b border-neutral-800">
+                <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Applicant</th>
+                <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Internship</th>
+                <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Status</th>
+                <th className="text-left text-xs text-neutral-500 uppercase tracking-wider px-5 py-3">Applied</th>
               </tr>
             </thead>
             <tbody>
-              {filteredApplications.map((application) => (
-                <tr
-                  key={application.id}
-                  style={{ borderBottom: '1px solid #eee' }}
-                >
-                  {/* Applicant name and email */}
-                  <td style={{ padding: '12px' }}>
-                    <strong>{application.user.name}</strong>
-                    <br />
-                    <span style={{ fontSize: '12px', color: '#666' }}>{application.user.email}</span>
+              {filteredApplications.map((app) => (
+                <tr key={app.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                  <td className="px-5 py-3">
+                    <p className="text-white text-sm font-medium">{app.user.name}</p>
+                    <p className="text-neutral-500 text-xs">{app.user.email}</p>
                   </td>
-
-                  {/* Internship title */}
-                  <td style={{ padding: '12px' }}>{application.internship.title}</td>
-
-                  {/* Status badge */}
-                  <td style={{ padding: '12px' }}>
-                    <span
-                      style={{
-                        padding: '4px 10px',
-                        borderRadius: '12px',
-                        backgroundColor: statusColors[application.status] || '#6c757d',
-                        color: 'white',
-                        fontSize: '12px',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {application.status}
+                  <td className="px-5 py-3 text-neutral-400 text-sm">{app.internship.title}</td>
+                  <td className="px-5 py-3">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusStyles[app.status] || 'bg-neutral-700 text-neutral-400'}`}>
+                      {app.status}
                     </span>
                   </td>
-
-                  {/* Application date */}
-                  <td style={{ padding: '12px', fontSize: '14px', color: '#666' }}>
-                    {new Date(application.appliedAt).toLocaleDateString()}
-                  </td>
+                  <td className="px-5 py-3 text-neutral-500 text-xs">{new Date(app.appliedAt).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>

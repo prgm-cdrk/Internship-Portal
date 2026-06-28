@@ -1,15 +1,13 @@
-// This is the Internship Listings page - shows all internships posted by the company
-// It fetches internships from /api/internship/get
+// Internship Listings page - shows all internships posted by the company
+// Fetches internships from /api/internship/get
 // Displays each internship with title, slots, deadline, and applicant count
-// Company managers can view, edit, or delete their listings
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for an internship
 type Internship = {
   id: number;
   title: string;
@@ -17,48 +15,33 @@ type Internship = {
   slots: number;
   deadline: string;
   createdAt: string;
-  _count: {
-    applications: number;   // Number of applicants for this internship
-  };
+  _count: { applications: number };
 };
 
 export default function InternshipsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // State
-  const [internships, setInternships] = useState<Internship[]>([]);  // List of internships
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-
-  // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
+    if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Fetch internships when session is ready
   useEffect(() => {
-    if (status === 'authenticated') {
-      fetchInternships();
-    }
+    if (status === 'authenticated') fetchInternships();
   }, [status]);
 
-  // Fetch all internships for this company
   const fetchInternships = async () => {
     try {
       const response = await fetch('/api/internship/get');
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to load internships');
         setLoading(false);
         return;
       }
-
-      // Set internships data
       setInternships(data.internships);
       setLoading(false);
     } catch (err) {
@@ -67,79 +50,48 @@ export default function InternshipsPage() {
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h1>Internship Listings</h1>
-        <button
-          onClick={() => router.push('/dashboard/company/internships/new')}   // Go to create new internship
-          style={{
-            padding: '10px 20px',
-            cursor: 'pointer',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-          }}
-        >
-          + Post New Internship
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-white">Internships</h1>
+        <button onClick={() => router.push('/dashboard/company/internships/new')} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors">
+          + New Internship
         </button>
       </div>
 
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+          <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
 
-      {/* Show message if no internships exist */}
       {internships.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>No internships posted yet.</p>
-          <button
-            onClick={() => router.push('/dashboard/company/internships/new')}
-            style={{
-              padding: '10px 20px',
-              cursor: 'pointer',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              marginTop: '10px',
-            }}
-          >
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
+          <p className="text-neutral-500 mb-4">No internships posted yet.</p>
+          <button onClick={() => router.push('/dashboard/company/internships/new')} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors">
             Post Your First Internship
           </button>
         </div>
       ) : (
-        /* List of internship cards */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <div className="space-y-2">
           {internships.map((internship) => (
-            <div
-              key={internship.id}
-              style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{internship.title}</h3>
-                  <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>
-                    {internship.description.length > 100
-                      ? internship.description.substring(0, 100) + '...'   // Truncate long descriptions
-                      : internship.description}
+            <div key={internship.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-white font-medium text-sm">{internship.title}</h3>
+                  <p className="text-neutral-500 text-xs mt-1 line-clamp-2">
+                    {internship.description.length > 120 ? internship.description.substring(0, 120) + '...' : internship.description}
                   </p>
                 </div>
               </div>
-
-              {/* Internship stats */}
-              <div style={{ display: 'flex', gap: '20px', fontSize: '14px', color: '#555' }}>
-                <span><strong>Slots:</strong> {internship.slots}</span>
-                <span><strong>Applicants:</strong> {internship._count.applications}</span>
-                <span>
-                  <strong>Deadline:</strong>{' '}
-                  {new Date(internship.deadline).toLocaleDateString()}   {/* Format deadline date */}
-                </span>
+              <div className="flex items-center gap-5 mt-3 text-xs text-neutral-500">
+                <span><span className="text-neutral-600">Slots:</span> {internship.slots}</span>
+                <span><span className="text-neutral-600">Applicants:</span> {internship._count.applications}</span>
+                <span><span className="text-neutral-600">Deadline:</span> {new Date(internship.deadline).toLocaleDateString()}</span>
               </div>
             </div>
           ))}

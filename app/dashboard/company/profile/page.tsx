@@ -1,64 +1,51 @@
-// This is the Company Profile page - shows company details with edit functionality
-// It fetches company data from /api/company/get
+// Company Profile page - shows company details with edit functionality
+// Fetches company data from /api/company/get
 // Displays company info with an Edit button
 // When Edit is clicked → form fields become editable
-// When Save is clicked → calls API to update (to be created next)
+// When Save is clicked → calls API to update
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for form fields, useEffect for data fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function CompanyProfilePage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // Company data and UI state
-  const [company, setCompany] = useState(null);     // Stores the company data
-  const [loading, setLoading] = useState(true);     // Loading state while fetching company
-  const [isEditing, setIsEditing] = useState(false); // Toggle between view and edit mode
+  const [company, setCompany] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Editable form fields
-  const [name, setName] = useState('');             // Company name
-  const [industry, setIndustry] = useState('');     // Industry category
-  const [website, setWebsite] = useState('');       // Company website
-  const [error, setError] = useState('');           // Error messages
-  const [saving, setSaving] = useState(false);      // Saving state while updating
+  const [name, setName] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [website, setWebsite] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  // Fetch company data when session is ready
   useEffect(() => {
-    // Redirect to login if user is not authenticated
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-
-    // Wait until session is loaded
     if (status === 'loading') return;
-
-    // Fetch the company data
     fetchCompanyData();
   }, [status]);
 
-  // Fetch company data from the API
   const fetchCompanyData = async () => {
     try {
       const response = await fetch('/api/company/get');
       const data = await response.json();
-
-      // If no company found, show error
       if (!response.ok) {
         setError('Company not found. Please create one first.');
         setLoading(false);
         return;
       }
-
-      // Set company data and populate form fields
       setCompany(data.company);
       setName(data.company.name);
       setIndustry(data.company.industry);
-      setWebsite(data.company.website || '');   // Default to empty string if no website
+      setWebsite(data.company.website || '');
       setLoading(false);
     } catch (err) {
       setError('Failed to load company');
@@ -66,58 +53,45 @@ export default function CompanyProfilePage() {
     }
   };
 
-  // Save updated company data
   const handleSave = async () => {
     setError('');
     setSaving(true);
-
-    // Validate required fields
     if (!name || !industry) {
       setError('Company name and industry are required');
       setSaving(false);
       return;
     }
-
     try {
-      // Call the update API with the new company data
       const response = await fetch('/api/company/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, industry, website })
       });
-
       const data = await response.json();
-
-      // If the server returned an error, display it
       if (!response.ok) {
         setError(data.error || 'Failed to save company');
         setSaving(false);
         return;
       }
-
-      // Update local state with the saved data and exit edit mode
       setCompany(data.company);
       setIsEditing(false);
       setSaving(false);
     } catch (err) {
-      // Handle network or unexpected errors
       setError('Failed to save company');
       setSaving(false);
     }
   };
 
-  // Show loading while session or company data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
-  // If no company exists, show a message with a link to create one
   if (!company) {
     return (
-      <div style={{ padding: '20px' }}>
-        <h1>Company Profile</h1>
-        <p style={{ color: 'red' }}>{error}</p>
-        <button onClick={() => router.push('/dashboard/company/create')}>
+      <div className="p-8">
+        <h1 className="text-xl font-bold text-white mb-4">Company Profile</h1>
+        <p className="text-red-400 mb-4">{error}</p>
+        <button onClick={() => router.push('/dashboard/company/create')} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors">
           Create Company
         </button>
       </div>
@@ -125,39 +99,32 @@ export default function CompanyProfilePage() {
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px' }}>
-      <h1>Company Profile</h1>
-      
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="p-8">
+      <div className="max-w-2xl">
+        <h1 className="text-xl font-bold text-white mb-6">Company Profile</h1>
 
-      {/* Company info card */}
-      <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}>
-        <div style={{ marginBottom: '20px' }}>
-          {/* Company Name - editable or display */}
-          <div style={{ marginBottom: '15px' }}>
-            <label><strong>Company Name:</strong></label>
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-5">
+          {/* Company Name */}
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Company Name</label>
             {isEditing ? (
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}   // Update name state on input
-                style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-              />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-neutral-500 transition-colors" />
             ) : (
-              <p>{company.name}</p>
+              <p className="text-white text-sm">{company.name}</p>
             )}
           </div>
 
-          {/* Industry - editable dropdown or display */}
-          <div style={{ marginBottom: '15px' }}>
-            <label><strong>Industry:</strong></label>
+          {/* Industry */}
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Industry</label>
             {isEditing ? (
-              <select
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}   // Update industry state on selection
-                style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-              >
+              <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm focus:outline-none focus:border-neutral-500 transition-colors">
                 <option value="">Select an industry</option>
                 <option value="Technology">Technology</option>
                 <option value="Finance">Finance</option>
@@ -168,49 +135,34 @@ export default function CompanyProfilePage() {
                 <option value="Other">Other</option>
               </select>
             ) : (
-              <p>{company.industry}</p>
+              <p className="text-white text-sm">{company.industry}</p>
             )}
           </div>
 
-          {/* Website - editable or display */}
-          <div style={{ marginBottom: '15px' }}>
-            <label><strong>Website:</strong></label>
+          {/* Website */}
+          <div>
+            <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-1.5">Website</label>
             {isEditing ? (
-              <input
-                type="url"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}   // Update website state on input
-                style={{ width: '100%', padding: '8px', marginTop: '5px' }}
-              />
+              <input type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://example.com" className="w-full px-3 py-2 bg-neutral-950 border border-neutral-700 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors" />
             ) : (
-              <p>{company.website || 'Not provided'}</p>
+              <p className="text-white text-sm">{company.website || 'Not provided'}</p>
             )}
           </div>
         </div>
 
-        {/* Action buttons - Save/Cancel when editing, Edit when viewing */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        {/* Actions */}
+        <div className="flex gap-3 mt-6">
           {isEditing ? (
             <>
-              <button
-                onClick={handleSave}
-                disabled={saving}    // Disable button while saving
-                style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none' }}
-              >
-                {saving ? 'Saving...' : 'Save'}   {/* Show loading text while saving */}
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50">
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
-              <button
-                onClick={() => setIsEditing(false)}   // Cancel editing, revert to view mode
-                style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#6c757d', color: 'white', border: 'none' }}
-              >
+              <button onClick={() => setIsEditing(false)} className="px-4 py-2 bg-neutral-800 text-neutral-400 text-sm font-medium rounded-lg hover:bg-neutral-700 hover:text-white transition-colors">
                 Cancel
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setIsEditing(true)}   // Enable edit mode
-              style={{ padding: '10px 20px', cursor: 'pointer', backgroundColor: '#007bff', color: 'white', border: 'none' }}
-            >
+            <button onClick={() => setIsEditing(true)} className="px-4 py-2 bg-neutral-800 text-white text-sm font-medium rounded-lg hover:bg-neutral-700 transition-colors">
               Edit Profile
             </button>
           )}
