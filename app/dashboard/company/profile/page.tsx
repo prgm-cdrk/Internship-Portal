@@ -88,7 +88,7 @@ export default function CompanyProfilePage() {
 
   if (!company) {
     return (
-      <div className="p-8">
+      <div className="p-8 pl-12">
         <h1 className="text-xl font-bold text-white mb-4">Company Profile</h1>
         <p className="text-red-400 mb-4">{error}</p>
         <button onClick={() => router.push('/dashboard/company/create')} className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors">
@@ -99,7 +99,7 @@ export default function CompanyProfilePage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 pl-12">
       <div className="max-w-2xl">
         <h1 className="text-xl font-bold text-white mb-6">Company Profile</h1>
 
