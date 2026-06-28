@@ -1,99 +1,147 @@
-// This page handles user login
-// It provides a form where users enter their email and password
-// It uses NextAuth's signIn function to authenticate with the Credentials provider
-// On successful login, the user is redirected to the dashboard
-
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function LoginPage() {
-  // Form state
-  const [email, setEmail] = useState('');          // Stores the user's email input
-  const [password, setPassword] = useState('');    // Stores the user's password input
-  const [error, setError] = useState('');          // Stores error messages to display
-  const [loading, setLoading] = useState(false);   // Tracks if form is being submitted
-  const router = useRouter();                      // Used to redirect after login
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();      // Prevent page reload on form submit
-    setError('');            // Clear any previous errors
-    setLoading(true);        // Show loading state on button
-
-    // Validate that both fields are filled
-    if (!email || !password) {
-      setError('Email and password are required');
-      setLoading(false);
-      return;
-    }
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
     try {
-      // Call NextAuth signIn with credentials provider
-      // redirect: false prevents automatic redirect so we can handle errors
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false
+        redirect: false,
       });
 
-      // Check if sign in was successful
-      if (!result?.ok) {
-        setError(result?.error || 'Invalid email or password');
+      if (result?.error) {
+        setError('Invalid email or password');
         setLoading(false);
         return;
       }
 
-      // Login successful - redirect to dashboard
-      router.push('/dashboard');
+      if (result?.ok) {
+        router.push('/dashboard');
+      }
     } catch (err) {
-      // Handle network or unexpected errors
       setError('An error occurred. Please try again.');
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px' }}>
-      <h1>Login</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '15px' }}>
-          <label>Email:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}   // Update email state on input
-            style={{ width: '100%', padding: '8px' }}
-          />
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4">
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 via-dark-950 to-dark-950 pointer-events-none"></div>
+
+      <div className="relative w-full max-w-md">
+        {/* Card */}
+        <div className="bg-dark-800 border border-dark-700 rounded-2xl shadow-2xl p-8">
+          {/* Logo/Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Intern<span className="text-accent-primary">Hub</span>
+            </h1>
+            <p className="text-dark-300 text-sm">
+              Welcome back to your internship portal
+            </p>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
+            <div>
+              <label className="block text-white font-medium mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-white font-medium mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
+                required
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-accent-primary hover:bg-accent-light text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+            >
+              {loading ? 'Logging in...' : 'Sign In'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-dark-700"></div>
+            <span className="px-3 text-dark-400 text-sm">or</span>
+            <div className="flex-1 border-t border-dark-700"></div>
+          </div>
+
+          {/* Register Link */}
+          <p className="text-center text-dark-300 text-sm">
+            Don't have an account?{' '}
+            <Link
+              href="/register"
+              className="text-accent-primary hover:text-accent-light font-medium transition"
+            >
+              Sign up here
+            </Link>
+          </p>
+
+          {/* Test Credentials Info */}
+          <div className="mt-8 bg-dark-900 border border-dark-700 rounded-lg p-4">
+            <p className="text-dark-300 text-xs font-medium mb-2">Test Credentials:</p>
+            <p className="text-dark-400 text-xs">
+              Email: <span className="text-accent-primary">prgm.cdrk@gmail.com</span>
+            </p>
+            <p className="text-dark-400 text-xs">
+              Password: <span className="text-accent-primary">MyOwnerP@ssw0rd123</span>
+            </p>
+          </div>
         </div>
 
-        <div style={{ marginBottom: '15px' }}>
-          <label>Password:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}   // Update password state on input
-            style={{ width: '100%', padding: '8px' }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}    // Disable button while submitting
-          style={{ width: '100%', padding: '10px', cursor: 'pointer' }}
-        >
-          {loading ? 'Logging in...' : 'Login'}   {/* Show loading text while submitting */}
-        </button>
-      </form>
-
-      <p>
-        Don&apos;t have an account? <Link href="/register">Register here</Link>
-      </p>
+        {/* Bottom Info */}
+        <p className="text-center text-dark-400 text-xs mt-6">
+          © 2024 InternHub. All rights reserved.
+        </p>
+      </div>
     </div>
   );
 }
-

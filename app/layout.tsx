@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/SessionProvider";
+import "./globals.css";
 
 // Metadata for the app - shows in the browser tab title
 export const metadata: Metadata = {
