@@ -1,5 +1,6 @@
 // Applicant Dashboard - shows application stats and quick actions
-// Uses the same monotone dark theme as the company manager dashboard
+// Unread tasks in Recent Activity are bold and clickable
+// My Tasks button shows notification badge for unread tasks
 
 'use client';
 
@@ -13,31 +14,49 @@ type Stats = {
   announcements: number;
 };
 
-type Activity = {
+type ActivityItem = {
+  id: number;
   type: 'application' | 'task' | 'announcement';
   message: string;
   detail: string;
   timestamp: string;
 };
 
+const STORAGE_KEY = 'readTasks';
+
+function getReadTaskIds(): number[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function markTaskAsRead(id: number) {
+  const read = getReadTaskIds();
+  if (!read.includes(id)) {
+    read.push(id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(read));
+  }
+}
+
 export default function ApplicantDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [stats, setStats] = useState<Stats>({ applications: 0, tasks: 0, announcements: 0 });
-  const [activities, setActivities] = useState<Activity[]>([]);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
+  const [readIds, setReadIds] = useState<number[]>([]);
+  const [unreadTaskCount, setUnreadTaskCount] = useState(0);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-      return;
-    }
+    if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'loading') return;
-    if (!session || session.user?.role !== 'APPLICANT') {
-      router.push('/login');
-      return;
-    }
+    if (!session || session.user?.role !== 'APPLICANT') { router.push('/login'); return; }
+    setReadIds(getReadTaskIds());
     fetchStats();
     fetchActivity();
   }, [session, status, router]);
@@ -57,6 +76,13 @@ export default function ApplicantDashboard() {
         tasks: taskData.tasks?.length || 0,
         announcements: announceData.announcements?.length || 0
       });
+
+      // Count unread tasks
+      const readIdsNow = getReadTaskIds();
+      const allTasks = taskData.tasks || [];
+      const unread = allTasks.filter((t: any) => !readIdsNow.includes(t.id)).length;
+      setUnreadTaskCount(unread);
+
       setLoading(false);
     } catch {
       setLoading(false);
@@ -74,20 +100,23 @@ export default function ApplicantDashboard() {
       const taskData = await taskRes.json();
       const announceData = await announceRes.json();
 
-      const all: Activity[] = [
+      const all: ActivityItem[] = [
         ...(appData.applications || []).map((a: any) => ({
+          id: a.id,
           type: 'application' as const,
           message: `Applied to ${a.internship?.title || 'internship'}`,
           detail: a.internship?.company?.name || 'Company',
           timestamp: a.appliedAt
         })),
         ...(taskData.tasks || []).map((t: any) => ({
+          id: t.id,
           type: 'task' as const,
           message: t.title,
           detail: t.description?.substring(0, 60) || 'No description',
           timestamp: t.createdAt
         })),
         ...(announceData.announcements || []).map((a: any) => ({
+          id: a.id,
           type: 'announcement' as const,
           message: a.title,
           detail: a.content?.substring(0, 60) || 'No content',
@@ -103,17 +132,26 @@ export default function ApplicantDashboard() {
     setActivityLoading(false);
   };
 
+  const handleActivityClick = (activity: ActivityItem) => {
+    if (activity.type === 'task') {
+      markTaskAsRead(activity.id);
+      setReadIds(getReadTaskIds());
+      setUnreadTaskCount(prev => Math.max(0, prev - 1));
+      router.push('/dashboard/applicant/tasks');
+    }
+  };
+
   const actions = [
-    { label: 'Browse Internships', desc: 'Find and apply to opportunities', path: '/dashboard/applicant/internships', icon: (
+    { label: 'Browse Internships', desc: 'Find and apply to opportunities', path: '/dashboard/applicant/internships', badge: 0, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
     )},
-    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', icon: (
+    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', badge: 0, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'My Tasks', desc: 'View assigned tasks', path: '/dashboard/applicant/tasks', icon: (
+    { label: 'My Tasks', desc: 'View assigned tasks', path: '/dashboard/applicant/tasks', badge: unreadTaskCount, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', icon: (
+    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', badge: 0, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
     )},
   ];
@@ -142,19 +180,11 @@ export default function ApplicantDashboard() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-neutral-500">Loading...</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
 
   if (!session || session.user?.role !== 'APPLICANT') {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-neutral-500">Access denied. Applicants only.</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Access denied. Applicants only.</p></div>;
   }
 
   return (
@@ -188,8 +218,14 @@ export default function ApplicantDashboard() {
             <button
               key={action.label}
               onClick={() => router.push(action.path)}
-              className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center gap-4 text-left transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-700 group"
+              className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center gap-4 text-left transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-700 group relative"
             >
+              {/* Notification badge */}
+              {action.badge > 0 && (
+                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-white text-black text-[10px] font-bold flex items-center justify-center">
+                  {action.badge}
+                </span>
+              )}
               <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:bg-neutral-700 transition-colors shrink-0">
                 {action.icon}
               </div>
@@ -223,18 +259,34 @@ export default function ApplicantDashboard() {
                 <p className="text-neutral-600 text-xs mt-1">Activity will appear here when you apply or receive tasks.</p>
               </div>
             ) : (
-              activities.map((activity, index) => (
-                <div key={index} className="px-5 py-3 flex items-start gap-3 hover:bg-neutral-800/30 transition-colors">
-                  <div className="mt-0.5 shrink-0 text-neutral-400">
-                    {activityIcons[activity.type]}
+              activities.map((activity, index) => {
+                const isUnreadTask = activity.type === 'task' && !readIds.includes(activity.id);
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleActivityClick(activity)}
+                    className={`px-5 py-3 flex items-start gap-3 transition-colors ${
+                      isUnreadTask
+                        ? 'hover:bg-neutral-800/50 cursor-pointer'
+                        : 'hover:bg-neutral-800/30'
+                    }`}
+                  >
+                    <div className={`mt-0.5 shrink-0 ${isUnreadTask ? 'text-white' : 'text-neutral-400'}`}>
+                      {activityIcons[activity.type]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm ${isUnreadTask ? 'text-white font-semibold' : 'text-white'}`}>
+                        {activity.message}
+                        {isUnreadTask && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-white align-middle" />}
+                      </p>
+                      <p className={`text-xs mt-0.5 truncate ${isUnreadTask ? 'text-neutral-400' : 'text-neutral-500'}`}>
+                        {activity.detail}
+                      </p>
+                    </div>
+                    <span className="text-neutral-600 text-xs shrink-0 mt-0.5">{timeAgo(activity.timestamp)}</span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-white text-sm">{activity.message}</p>
-                    <p className="text-neutral-500 text-xs mt-0.5 truncate">{activity.detail}</p>
-                  </div>
-                  <span className="text-neutral-600 text-xs shrink-0 mt-0.5">{timeAgo(activity.timestamp)}</span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
