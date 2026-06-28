@@ -221,7 +221,7 @@ export default function ApplicantsPage() {
                       {/* Status updater */}
                       <div className="mt-4 pt-4 border-t border-neutral-800/50">
                         <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
-                        <div className="bg-neutral-800 rounded-lg p-4">
+                        <div className="bg-neutral-800 rounded-lg p-4 w-1/2">
                           <div className="flex gap-2 flex-wrap">
                             {allStatuses.map((s) => (
                               <button
