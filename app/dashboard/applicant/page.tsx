@@ -45,9 +45,9 @@ export default function ApplicantDashboard() {
   const fetchStats = async () => {
     try {
       const [appRes, taskRes, announceRes] = await Promise.all([
-        fetch('/api/applicant/applications'),
-        fetch('/api/applicant/tasks'),
-        fetch('/api/applicant/announcements')
+        fetch('/api/application/my'),
+        fetch('/api/task/my'),
+        fetch('/api/announcement/my')
       ]);
       const appData = await appRes.json();
       const taskData = await taskRes.json();
@@ -66,9 +66,9 @@ export default function ApplicantDashboard() {
   const fetchActivity = async () => {
     try {
       const [appRes, taskRes, announceRes] = await Promise.all([
-        fetch('/api/applicant/applications'),
-        fetch('/api/applicant/tasks'),
-        fetch('/api/applicant/announcements')
+        fetch('/api/application/my'),
+        fetch('/api/task/my'),
+        fetch('/api/announcement/my')
       ]);
       const appData = await appRes.json();
       const taskData = await taskRes.json();
@@ -79,7 +79,7 @@ export default function ApplicantDashboard() {
           type: 'application' as const,
           message: `Applied to ${a.internship?.title || 'internship'}`,
           detail: a.internship?.company?.name || 'Company',
-          timestamp: a.createdAt
+          timestamp: a.appliedAt
         })),
         ...(taskData.tasks || []).map((t: any) => ({
           type: 'task' as const,
