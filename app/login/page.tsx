@@ -71,6 +71,9 @@ export default function LoginPage() {
       <div className="absolute top-1/2 right-10 w-1.5 h-1.5 rounded-full bg-accent-primary/35 animate-float" style={{ animationDelay: '3.5s' }}></div>
       <div className="absolute bottom-20 right-1/5 w-2 h-2 rounded-full bg-accent-primary/25 animate-float" style={{ animationDelay: '4.5s' }}></div>
 
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,107,53,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,53,0.06)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:linear-gradient(to_bottom_right,black_20%,transparent_80%)]"></div>
+
       <div className="relative w-full max-w-lg z-10">
         
         {/* Animated border wrapper */}
