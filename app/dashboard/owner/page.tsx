@@ -111,7 +111,7 @@ export default function OwnerDashboard() {
           </div>
           <button
             onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-            className="px-4 py-2 bg-dark-800 text-dark-300 border border-dark-600 rounded-xl hover:border-dark-400 hover:text-white transition-colors text-sm"
+            className="px-4 py-2 bg-dark-800 text-dark-300 border border-dark-600 rounded-xl hover:border-red-500/50 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 text-sm"
           >
             Sign Out
           </button>
@@ -127,7 +127,7 @@ export default function OwnerDashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
           {statCards.map((stat) => (
-            <div key={stat.label} className="bg-dark-800 border border-dark-700 rounded-xl p-5">
+            <div key={stat.label} className="bg-dark-800 border border-dark-700 rounded-xl p-5 transition-all duration-300 hover:border-dark-500 hover:shadow-lg hover:shadow-dark-950/50 hover:-translate-y-1">
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-dark-400">{stat.icon}</div>
                 <span className="text-xs text-dark-400 uppercase tracking-wider">{stat.label}</span>
@@ -145,7 +145,7 @@ export default function OwnerDashboard() {
               <button
                 key={action.label}
                 onClick={() => router.push(action.path)}
-                className={`${action.color} text-white font-semibold py-4 px-6 rounded-xl flex items-center gap-3 transition-colors`}
+                className={`${action.color} text-white font-semibold py-4 px-6 rounded-xl flex items-center gap-3 transition-all duration-300 hover:scale-[1.03] hover:shadow-lg hover:shadow-accent-primary/20 active:scale-[0.98]`}
               >
                 {action.icon}
                 {action.label}
