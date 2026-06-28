@@ -1,4 +1,4 @@
-// This API route creates a PayMongo checkout session for upgrading to PRO plan
+// This API route creates a PayMongo checkout session for upgrading to BASIC or PRO plan
 // It sends a request to PayMongo's API to create a payment link
 // Then returns the checkout URL for the user to complete payment
 
@@ -26,13 +26,21 @@ export async function POST(req: Request) {
     // Parse the plan from request body
     const { plan } = await req.json();
 
-    // Validate that plan is provided and is PRO
-    if (!plan || plan !== 'PRO') {
+    // Validate that plan is provided and is either BASIC or PRO
+    if (!plan || !['BASIC', 'PRO'].includes(plan)) {
       return Response.json(
-        { error: 'Invalid plan. Only PRO plan upgrade is available.' },
+        { error: 'Invalid plan. Only BASIC and PRO plan upgrades are available.' },
         { status: 400 }
       );
     }
+
+    // Set pricing based on selected plan
+    const planPricing: { [key: string]: { amount: number; name: string; description: string } } = {
+      BASIC: { amount: 29900, name: 'BASIC Plan', description: 'Upgrade to BASIC plan for 10 postings and 10 applicants' },
+      PRO: { amount: 49900, name: 'PRO Plan', description: 'Upgrade to PRO plan for unlimited features' }
+    };
+
+    const selectedPlan = planPricing[plan];
 
     // Find the company linked to the logged-in user
     const company = await prisma.company.findFirst({
@@ -68,13 +76,13 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         data: {
           attributes: {
-            // Payment amount: ₱999 in centavos (99900)
+            // Payment amount in centavos based on selected plan
             line_items: [
               {
-                name: 'PRO Plan - Monthly Subscription',
-                description: 'Upgrade to PRO plan for unlimited features',
+                name: `${selectedPlan.name} - Monthly Subscription`,
+                description: selectedPlan.description,
                 quantity: 1,
-                amount: 99900,       // Amount in centavos (₱999)
+                amount: selectedPlan.amount,  // Amount in centavos (₱29900 for BASIC, ₱49900 for PRO)
                 currency: 'PHP'
               }
             ],
@@ -84,9 +92,9 @@ export async function POST(req: Request) {
             success_url: `${process.env.NEXTAUTH_URL}/dashboard/company/billing?success=true`,
             cancel_url: `${process.env.NEXTAUTH_URL}/dashboard/company/billing?cancelled=true`,
             // Reference ID for tracking
-            reference_number: `PRO-${company.id}-${Date.now()}`,
+            reference_number: `${plan}-${company.id}-${Date.now()}`,
             // Description for the payment
-            description: `PRO Plan Subscription for ${company.name}`
+            description: `${selectedPlan.name} Subscription for ${company.name}`
           }
         }
       })

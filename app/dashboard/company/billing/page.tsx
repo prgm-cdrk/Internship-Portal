@@ -1,6 +1,6 @@
 // This is the Billing & Subscription page - where company managers can view and upgrade their plan
-// It displays the current plan (FREE or PRO) with pricing and features
-// Users can upgrade to PRO which redirects to PayMongo checkout
+// It displays the current plan (FREE, BASIC, or PRO) with pricing and features
+// Users can upgrade to BASIC or PRO which redirects to PayMongo checkout
 
 'use client';
 
@@ -52,8 +52,8 @@ export default function BillingPage() {
     }
   };
 
-  // Handle upgrade to PRO plan - creates PayMongo checkout session
-  const handleUpgrade = async () => {
+  // Handle upgrade to selected plan - creates PayMongo checkout session
+  const handleUpgrade = async (selectedPlan: string) => {
     setUpgrading(true);
     setError('');
 
@@ -62,7 +62,7 @@ export default function BillingPage() {
       const response = await fetch('/api/payment/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan: 'PRO' })
+        body: JSON.stringify({ plan: selectedPlan })
       });
 
       const data = await response.json();
@@ -93,7 +93,7 @@ export default function BillingPage() {
   const currentPlan = subscription?.plan || 'FREE';
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
+    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
       <h1>Billing & Subscription</h1>
       <p>Manage your subscription and upgrade to unlock more features.</p>
 
@@ -110,8 +110,8 @@ export default function BillingPage() {
         )}
       </div>
 
-      {/* Pricing Plans - side by side comparison */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+      {/* Pricing Plans - three columns comparison */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
         {/* FREE Plan Card */}
         <div
           style={{
@@ -125,7 +125,7 @@ export default function BillingPage() {
           <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>₱0/month</p>
           <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
             <li>✅ 1 internship posting</li>
-            <li>✅ Up to 10 applicants</li>
+            <li>✅ Up to 3 applicants</li>
             <li>✅ Basic features</li>
             <li>❌ Task management</li>
             <li>❌ Priority support</li>
@@ -150,6 +150,62 @@ export default function BillingPage() {
           )}
         </div>
 
+        {/* BASIC Plan Card */}
+        <div
+          style={{
+            border: currentPlan === 'BASIC' ? '3px solid #28a745' : '1px solid #ddd',
+            padding: '20px',
+            borderRadius: '8px',
+            backgroundColor: currentPlan === 'BASIC' ? '#e8f5e9' : '#fff'
+          }}
+        >
+          <h3>BASIC Plan</h3>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>₱299/month</p>
+          <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
+            <li>✅ 10 internship postings</li>
+            <li>✅ Up to 10 applicants</li>
+            <li>✅ Basic features</li>
+            <li>✅ Task management</li>
+            <li>❌ Priority support</li>
+          </ul>
+          {/* Show "Current Plan" if on BASIC, otherwise show upgrade button */}
+          {currentPlan === 'BASIC' ? (
+            <button
+              disabled
+              style={{
+                marginTop: '20px',
+                width: '100%',
+                padding: '10px',
+                backgroundColor: '#ccc',
+                color: '#666',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'not-allowed'
+              }}
+            >
+              Current Plan
+            </button>
+          ) : (
+            <button
+              onClick={() => handleUpgrade('BASIC')}
+              disabled={upgrading}
+              style={{
+                marginTop: '20px',
+                width: '100%',
+                padding: '10px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              {upgrading ? 'Processing...' : 'Upgrade to BASIC'}
+            </button>
+          )}
+        </div>
+
         {/* PRO Plan Card */}
         <div
           style={{
@@ -165,8 +221,7 @@ export default function BillingPage() {
             Popular
           </div>
           <h3>PRO Plan</h3>
-          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>₱999/month</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>or ₱9,499/year (save 21%)</p>
+          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>₱499/month</p>
           <ul style={{ marginTop: '15px', listStyle: 'none', padding: 0 }}>
             <li>✅ Unlimited internship postings</li>
             <li>✅ Unlimited applicants</li>
@@ -174,7 +229,7 @@ export default function BillingPage() {
             <li>✅ Task management</li>
             <li>✅ Priority support</li>
           </ul>
-          {/* Show "Current Plan" if on PRO, otherwise show "Upgrade to PRO" button */}
+          {/* Show "Current Plan" if on PRO, otherwise show upgrade button */}
           {currentPlan === 'PRO' ? (
             <button
               disabled
@@ -193,7 +248,7 @@ export default function BillingPage() {
             </button>
           ) : (
             <button
-              onClick={handleUpgrade}
+              onClick={() => handleUpgrade('PRO')}
               disabled={upgrading}
               style={{
                 marginTop: '20px',
@@ -216,7 +271,7 @@ export default function BillingPage() {
       {/* Trial Info - 14-day free trial banner */}
       <div style={{ marginTop: '40px', padding: '20px', backgroundColor: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
         <h3>🎁 14-Day Free Trial</h3>
-        <p>New PRO subscribers get 14 days of free access to try all PRO features risk-free. No credit card required for the trial.</p>
+        <p>New subscribers get 14 days of free access to try all features risk-free. No credit card required for the trial.</p>
       </div>
     </div>
   );
