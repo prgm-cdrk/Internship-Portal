@@ -111,15 +111,22 @@ export default function ApplicantDashboard() {
       });
 
       const readTaskIdsNow = getReadIds(READ_TASKS_KEY);
-      const savedTaskStatuses = getTaskStatuses();
       const allTasks = taskData.tasks || [];
+
+      // Store current task statuses for change detection
+      for (const task of allTasks) {
+        setTaskStatus(task.id, task.status);
+      }
+
+      // Now re-read to get updated statuses
+      const savedTaskStatuses = getTaskStatuses();
 
       // Count unread tasks: not read OR status changed (e.g., returned from COMPLETED to ONGOING)
       let unreadTasks = 0;
       for (const task of allTasks) {
         const savedStatus = savedTaskStatuses[task.id];
         const isRead = readTaskIdsNow.includes(task.id);
-        const statusChanged = savedStatus && savedStatus !== task.status;
+        const statusChanged = savedStatus !== undefined && savedStatus !== task.status;
         if (!isRead || statusChanged) {
           unreadTasks++;
         }
@@ -168,13 +175,16 @@ export default function ApplicantDashboard() {
           detail: a.internship?.company?.name || 'Company',
           timestamp: a.appliedAt
         })),
-        ...(taskData.tasks || []).map((t: any) => ({
-          id: t.id,
-          type: 'task' as const,
-          message: t.title,
-          detail: t.description?.substring(0, 60) || 'No description',
-          timestamp: t.createdAt
-        })),
+        ...(taskData.tasks || []).map((t: any) => {
+          const isReturned = t.status === 'ONGOING' && t.updatedAt && new Date(t.updatedAt).getTime() > new Date(t.createdAt).getTime();
+          return {
+            id: t.id,
+            type: 'task' as const,
+            message: isReturned ? `${t.title} (returned)` : t.title,
+            detail: isReturned ? 'Manager returned this task — please redo' : (t.description?.substring(0, 60) || 'No description'),
+            timestamp: isReturned ? t.updatedAt : t.createdAt
+          };
+        }),
         ...(announceData.announcements || []).map((a: any) => ({
           id: a.id,
           type: 'announcement' as const,
