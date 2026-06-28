@@ -141,15 +141,12 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-dark-800 items-center justify-center relative overflow-hidden">
-        {/* Illustration */}
-        <div className="relative z-10 p-12">
-          <img
-            src="/login-illustration.svg"
-            alt="Internship Portal Illustration"
-            className="w-full max-w-lg"
-          />
-        </div>
+      <div className="hidden lg:flex lg:w-1/2 bg-dark-900 items-center justify-center">
+        <img
+          src="/login-illustration.svg"
+          alt="Internship Portal Illustration"
+          className="w-64 opacity-80"
+        />
       </div>
     </div>
   );
