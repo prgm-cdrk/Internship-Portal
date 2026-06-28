@@ -77,7 +77,7 @@ export default function RegisterPage() {
       <div className="absolute bottom-20 right-1/5 w-2 h-2 rounded-full bg-accent-primary/25 animate-float" style={{ animationDelay: '4.5s' }}></div>
 
       {/* Grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,107,53,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,53,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,107,53,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,53,0.06)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"></div>
 
       {/* Registration card - horizontal */}
       <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-4xl relative z-10">
