@@ -124,7 +124,7 @@ export default function TasksPage() {
     }
   };
 
-  const handleReviewTask = async (taskId: number) => {
+  const handleReviewTask = async (taskId: number, action: 'accept' | 'return') => {
     setError('');
     setSuccessMessage('');
     setReviewingId(taskId);
@@ -132,7 +132,7 @@ export default function TasksPage() {
       const response = await fetch('/api/task/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ taskId })
+        body: JSON.stringify({ taskId, action })
       });
       const data = await response.json();
       if (!response.ok) {
@@ -140,7 +140,7 @@ export default function TasksPage() {
         setReviewingId(null);
         return;
       }
-      setSuccessMessage('Task accepted successfully');
+      setSuccessMessage(action === 'accept' ? 'Task accepted successfully' : 'Task returned to intern');
       setReviewingId(null);
       fetchTasks();
     } catch {
@@ -415,13 +415,22 @@ export default function TasksPage() {
                                 <p className="text-white text-sm font-medium">Ready for review</p>
                                 <p className="text-neutral-500 text-xs mt-0.5">{task.user.name} has marked this task as completed</p>
                               </div>
-                              <button
-                                onClick={() => handleReviewTask(task.id)}
-                                disabled={reviewingId === task.id}
-                                className="px-5 py-2.5 bg-gradient-to-r from-white to-neutral-200 text-black text-sm font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50"
-                              >
-                                {reviewingId === task.id ? 'Accepting...' : 'Accept'}
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleReviewTask(task.id, 'return')}
+                                  disabled={reviewingId === task.id}
+                                  className="px-4 py-2.5 bg-neutral-800 border border-neutral-700 text-neutral-300 text-sm rounded-lg hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                                >
+                                  {reviewingId === task.id ? '...' : 'Return'}
+                                </button>
+                                <button
+                                  onClick={() => handleReviewTask(task.id, 'accept')}
+                                  disabled={reviewingId === task.id}
+                                  className="px-5 py-2.5 bg-gradient-to-r from-white to-neutral-200 text-black text-sm font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50"
+                                >
+                                  {reviewingId === task.id ? '...' : 'Accept'}
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )}
