@@ -65,3 +65,19 @@ body {
   background-size: 400% 400%;
   animation: gradient-shift 10s ease infinite;
 }
+
+@keyframes border-glow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes border-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-border-glow {
+  background: conic-gradient(from 0deg, #FF6B35, transparent 25%, #FF6B35 50%, transparent 75%, #FF6B35);
+  animation: border-rotate 4s linear infinite;
+}

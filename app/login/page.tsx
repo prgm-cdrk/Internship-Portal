@@ -73,8 +73,9 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md z-10">
         
-        {/* Main Card */}
-        <div className="bg-dark-800 border-2 border-accent-primary/30 rounded-2xl p-10 shadow-[0_0_50px_rgba(255,107,53,0.15)]">
+        {/* Animated border wrapper */}
+        <div className="relative rounded-2xl p-[2px] animate-border-glow">
+          <div className="bg-dark-800 rounded-2xl p-10 shadow-[0_0_50px_rgba(255,107,53,0.15)]">
           
           {/* Header */}
           <div className="mb-12">
@@ -153,6 +154,7 @@ export default function LoginPage() {
               Register here
             </Link>
           </p>
+        </div>
         </div>
 
         {/* Footer */}
