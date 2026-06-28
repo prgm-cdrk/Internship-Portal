@@ -47,7 +47,7 @@ export default function LoginPage() {
         {/* Left Side - Illustration */}
         <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-dark-900 to-dark-950 rounded-3xl lg:rounded-r-none">
           <Image
-            src="/login-illustration.png"
+            src="/login-illustration.svg"
             alt="InternHub Illustration"
             width={400}
             height={500}
@@ -141,18 +141,6 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          {/* Test Credentials */}
-          <div className="mt-8 bg-dark-900 border border-accent-primary/30 rounded-xl p-5">
-            <p className="text-accent-primary text-xs font-bold mb-3 uppercase tracking-wider">🔐 Test Credentials</p>
-            <div className="space-y-2">
-              <p className="text-dark-300 text-xs">
-                Email: <span className="text-accent-primary font-mono">prgm.cdrk@gmail.com</span>
-              </p>
-              <p className="text-dark-300 text-xs">
-                Password: <span className="text-accent-primary font-mono">MyOwnerP@ssw0rd123</span>
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
