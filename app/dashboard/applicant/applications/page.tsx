@@ -77,7 +77,7 @@ export default function TrackApplicationsPage() {
   }
 
   return (
-    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full">
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full dashboard-grid">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white tracking-wide">My Applications</h1>

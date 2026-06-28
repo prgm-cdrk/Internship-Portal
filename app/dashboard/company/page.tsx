@@ -136,7 +136,7 @@ export default function CompanyDashboard() {
   };
 
   return (
-    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line relative">
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line dashboard-grid relative">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
