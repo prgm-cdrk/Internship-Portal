@@ -176,7 +176,6 @@ export default function ApplicantsPage() {
                   {/* Expanded content */}
                   {isExpanded && (
                     <div className="px-5 pb-5 border-t border-neutral-800">
-                      {/* Top row: Applicant info + Status updater */}
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Applicant info */}
                         <div>
@@ -189,59 +188,57 @@ export default function ApplicantsPage() {
                           </div>
                         </div>
 
-                        {/* Status updater */}
+                        {/* Resume */}
                         <div>
-                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
+                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Resume</p>
                           <div className="bg-neutral-800 rounded-lg p-4">
-                            <div className="flex gap-2 flex-wrap">
-                              {allStatuses.map((s) => (
-                                <button
-                                  key={s}
-                                  onClick={() => handleStatusUpdate(app.id, s)}
-                                  disabled={app.status === s || isUpdating}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                    app.status === s
-                                      ? 'bg-white text-black cursor-default'
-                                      : isUpdating
-                                        ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                                        : 'bg-neutral-700 text-neutral-400 border border-neutral-600 hover:bg-neutral-600 hover:text-white'
-                                  }`}
+                            {app.resumeUrl ? (
+                              <div className="space-y-3">
+                                <a
+                                  href={app.resumeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 px-3 py-2 bg-neutral-700 border border-neutral-600 rounded-lg text-sm text-neutral-300 hover:bg-neutral-600 transition-colors"
                                 >
-                                  {s}
-                                </button>
-                              ))}
-                            </div>
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  View Resume (PDF)
+                                </a>
+                                <iframe
+                                  src={app.resumeUrl}
+                                  className="w-full h-64 rounded-lg border border-neutral-700 bg-white"
+                                  title={`${app.user.name} Resume`}
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-neutral-500 text-sm">No resume uploaded</p>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Resume — full width below */}
-                      <div className="mt-4">
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Resume</p>
-                        {app.resumeUrl ? (
-                          <div className="space-y-2">
-                            <a
-                              href={app.resumeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3 py-2 bg-neutral-800 border border-neutral-700 rounded-lg text-sm text-neutral-300 hover:bg-neutral-700 transition-colors"
+                      {/* Status updater */}
+                      <div className="mt-4 pt-4 border-t border-neutral-800/50">
+                        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-3">Update Status</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {allStatuses.map((s) => (
+                            <button
+                              key={s}
+                              onClick={() => handleStatusUpdate(app.id, s)}
+                              disabled={app.status === s || isUpdating}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                app.status === s
+                                  ? 'bg-white text-black cursor-default'
+                                  : isUpdating
+                                    ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                                    : 'bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700 hover:text-white'
+                              }`}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                              Open in new tab
-                            </a>
-                            <iframe
-                              src={app.resumeUrl}
-                              className="w-full h-[800px] rounded-lg border border-neutral-700 bg-white"
-                              title={`${app.user.name} Resume`}
-                            />
-                          </div>
-                        ) : (
-                          <div className="bg-neutral-800 rounded-lg p-8 text-center">
-                            <p className="text-neutral-500 text-sm">No resume uploaded</p>
-                          </div>
-                        )}
+                              {s}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
