@@ -42,6 +42,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
       
+      {/* Subtle Animated Gradient Background */}
+      <div className="absolute inset-0 animate-gradient-shift"></div>
+      
       {/* Animated Geometric Background Elements */}
       <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl animate-float"></div>
       <div className="absolute bottom-32 left-10 w-48 h-48 rounded-full bg-accent-primary/5 blur-3xl animate-pulse_slow"></div>
