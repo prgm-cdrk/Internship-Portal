@@ -233,7 +233,7 @@ export default function ApplicantsPage() {
                             </a>
                             <iframe
                               src={app.resumeUrl}
-                              className="w-full h-[600px] rounded-lg border border-neutral-700 bg-white"
+                              className="w-full h-[800px] rounded-lg border border-neutral-700 bg-white"
                               title={`${app.user.name} Resume`}
                             />
                           </div>
