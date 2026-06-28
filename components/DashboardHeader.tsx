@@ -17,16 +17,6 @@ export default function DashboardHeader() {
   // Navigation links based on role
   const navLinks = (() => {
     switch (role) {
-      case 'COMPANY':
-        return [
-          { label: 'Dashboard', path: '/dashboard/company' },
-          { label: 'Profile', path: '/dashboard/company/profile' },
-          { label: 'Internships', path: '/dashboard/company/internships' },
-          { label: 'Applicants', path: '/dashboard/company/applicants' },
-          { label: 'Tasks', path: '/dashboard/company/tasks' },
-          { label: 'Announcements', path: '/dashboard/company/announcements' },
-          { label: 'Billing', path: '/dashboard/company/billing' },
-        ];
       case 'APPLICANT':
         return [
           { label: 'Dashboard', path: '/dashboard/applicant' },
