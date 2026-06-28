@@ -54,7 +54,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md z-10">
         
         {/* Main Card */}
-        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-10 shadow-2xl">
+        <div className="bg-dark-800 border-2 border-accent-primary/30 rounded-2xl p-10 shadow-2xl">
           
           {/* Header */}
           <div className="mb-12">
