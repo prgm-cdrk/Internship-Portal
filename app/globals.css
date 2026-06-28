@@ -113,8 +113,8 @@ body {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
-  animation: scan-line 8s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  animation: scan-line 6s linear infinite;
   z-index: 0;
   pointer-events: none;
 }
