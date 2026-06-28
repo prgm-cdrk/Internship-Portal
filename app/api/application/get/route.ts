@@ -61,7 +61,7 @@ export async function GET(req: Request) {
           }
         }
       },
-      orderBy: { appliedAt: 'desc' }   // Most recent applications first
+      orderBy: { appliedAt: 'desc' }
     });
 
     // Return the applications data

@@ -6,7 +6,6 @@ import { PrismaClient } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
-
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
