@@ -25,6 +25,7 @@ type ActivityItem = {
 // localStorage keys
 const READ_TASKS_KEY = 'readTasks';
 const TASK_STATUSES_KEY = 'taskStatuses';
+const READ_APPS_KEY = 'readApps';
 const APP_STATUSES_KEY = 'appStatuses';
 const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
 
@@ -44,32 +45,18 @@ function markAsRead(key: string, id: number) {
   }
 }
 
-function getAppStatuses(): Record<number, string> {
+function getStoredStatuses(key: string): Record<number, string> {
   if (typeof window === 'undefined') return {};
   try {
-    const stored = localStorage.getItem(APP_STATUSES_KEY);
+    const stored = localStorage.getItem(key);
     return stored ? JSON.parse(stored) : {};
   } catch { return {}; }
 }
 
-function setAppStatus(id: number, status: string) {
-  const statuses = getAppStatuses();
+function setStoredStatus(key: string, id: number, status: string) {
+  const statuses = getStoredStatuses(key);
   statuses[id] = status;
-  localStorage.setItem(APP_STATUSES_KEY, JSON.stringify(statuses));
-}
-
-function getTaskStatuses(): Record<number, string> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const stored = localStorage.getItem(TASK_STATUSES_KEY);
-    return stored ? JSON.parse(stored) : {};
-  } catch { return {}; }
-}
-
-function setTaskStatus(id: number, status: string) {
-  const statuses = getTaskStatuses();
-  statuses[id] = status;
-  localStorage.setItem(TASK_STATUSES_KEY, JSON.stringify(statuses));
+  localStorage.setItem(key, JSON.stringify(statuses));
 }
 
 export default function ApplicantDashboard() {
@@ -79,7 +66,6 @@ export default function ApplicantDashboard() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
-  const [readTaskIds, setReadTaskIds] = useState<number[]>([]);
   const [unreadTaskCount, setUnreadTaskCount] = useState(0);
   const [unreadAppCount, setUnreadAppCount] = useState(0);
   const [unreadAnnouncementCount, setUnreadAnnouncementCount] = useState(0);
@@ -88,12 +74,10 @@ export default function ApplicantDashboard() {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'loading') return;
     if (!session || session.user?.role !== 'APPLICANT') { router.push('/login'); return; }
-    setReadTaskIds(getReadIds(READ_TASKS_KEY));
-    fetchStats();
-    fetchActivity();
+    loadData();
   }, [session, status, router]);
 
-  const fetchStats = async () => {
+  const loadData = async () => {
     try {
       const [appRes, taskRes, announceRes] = await Promise.all([
         fetch('/api/application/my'),
@@ -104,71 +88,69 @@ export default function ApplicantDashboard() {
       const taskData = await taskRes.json();
       const announceData = await announceRes.json();
 
+      const allTasks = taskData.tasks || [];
+      const allApps = appData.applications || [];
+      const allAnnouncements = announceData.announcements || [];
+
+      // Stats
       setStats({
-        applications: appData.applications?.length || 0,
-        tasks: taskData.tasks?.length || 0,
-        announcements: announceData.announcements?.length || 0
+        applications: allApps.length,
+        tasks: allTasks.length,
+        announcements: allAnnouncements.length
       });
 
-      const readTaskIdsNow = getReadIds(READ_TASKS_KEY);
-      const savedTaskStatuses = getTaskStatuses();
-      const allTasks = taskData.tasks || [];
-
-      // Count unread tasks: not read OR status changed (e.g., returned from COMPLETED to ONGOING)
+      // --- Count unread TASKS ---
+      const readTaskIds = getReadIds(READ_TASKS_KEY);
+      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
       let unreadTasks = 0;
       for (const task of allTasks) {
         const savedStatus = savedTaskStatuses[task.id];
-        const isRead = readTaskIdsNow.includes(task.id);
-        const statusChanged = savedStatus !== undefined && savedStatus !== task.status;
-        if (!isRead || statusChanged) {
+        const isRead = readTaskIds.includes(task.id);
+        // Unread if: never seen before OR status changed since last seen
+        if (!isRead || (savedStatus !== undefined && savedStatus !== task.status)) {
           unreadTasks++;
         }
       }
       setUnreadTaskCount(unreadTasks);
 
-      // Count applications with status changes
-      const savedStatuses = getAppStatuses();
-      const apps = appData.applications || [];
+      // Store current task statuses for next load comparison
+      for (const task of allTasks) {
+        setStoredStatus(TASK_STATUSES_KEY, task.id, task.status);
+      }
+
+      // --- Count unread APPLICATIONS ---
+      const readAppIds = getReadIds(READ_APPS_KEY);
+      const savedAppStatuses = getStoredStatuses(APP_STATUSES_KEY);
       let unreadApps = 0;
-      for (const app of apps) {
-        const saved = savedStatuses[app.id];
-        if (!saved || saved !== app.status) {
+      for (const app of allApps) {
+        const savedStatus = savedAppStatuses[app.id];
+        const isRead = readAppIds.includes(app.id);
+        // Unread if: never seen before OR status changed since last seen
+        if (!isRead || (savedStatus !== undefined && savedStatus !== app.status)) {
           unreadApps++;
         }
       }
       setUnreadAppCount(unreadApps);
 
-      // Count unread announcements
+      // Store current app statuses for next load comparison
+      for (const app of allApps) {
+        setStoredStatus(APP_STATUSES_KEY, app.id, app.status);
+      }
+
+      // --- Count unread ANNOUNCEMENTS ---
       const readAnnIds = getReadIds(READ_ANNOUNCEMENTS_KEY);
-      const announcements = announceData.announcements || [];
-      setUnreadAnnouncementCount(announcements.filter((a: any) => !readAnnIds.includes(a.id)).length);
+      setUnreadAnnouncementCount(allAnnouncements.filter((a: any) => !readAnnIds.includes(a.id)).length);
 
-      setLoading(false);
-    } catch {
-      setLoading(false);
-    }
-  };
-
-  const fetchActivity = async () => {
-    try {
-      const [appRes, taskRes, announceRes] = await Promise.all([
-        fetch('/api/application/my'),
-        fetch('/api/task/my'),
-        fetch('/api/announcement/my')
-      ]);
-      const appData = await appRes.json();
-      const taskData = await taskRes.json();
-      const announceData = await announceRes.json();
-
+      // --- Build activity feed ---
       const all: ActivityItem[] = [
-        ...(appData.applications || []).map((a: any) => ({
+        ...allApps.map((a: any) => ({
           id: a.id,
           type: 'application' as const,
           message: `Applied to ${a.internship?.title || 'internship'}`,
           detail: a.internship?.company?.name || 'Company',
           timestamp: a.appliedAt
         })),
-        ...(taskData.tasks || []).map((t: any) => {
+        ...allTasks.map((t: any) => {
           const isReturned = t.status === 'ONGOING' && t.updatedAt && new Date(t.updatedAt).getTime() > new Date(t.createdAt).getTime();
           return {
             id: t.id,
@@ -178,7 +160,7 @@ export default function ApplicantDashboard() {
             timestamp: isReturned ? t.updatedAt : t.createdAt
           };
         }),
-        ...(announceData.announcements || []).map((a: any) => ({
+        ...allAnnouncements.map((a: any) => ({
           id: a.id,
           type: 'announcement' as const,
           message: a.title,
@@ -188,27 +170,27 @@ export default function ApplicantDashboard() {
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
        .slice(0, 5);
 
-      // Store current task statuses for change detection
-      for (const task of taskData.tasks || []) {
-        setTaskStatus(task.id, task.status);
-      }
-
       setActivities(all);
-    } catch { /* silent */ }
-    setActivityLoading(false);
+      setLoading(false);
+      setActivityLoading(false);
+    } catch {
+      setLoading(false);
+      setActivityLoading(false);
+    }
   };
 
   const handleActivityClick = (activity: ActivityItem) => {
     if (activity.type === 'task') {
       markAsRead(READ_TASKS_KEY, activity.id);
-      // Also update stored status so status changes are no longer "unread"
-      const task = activities.find(a => a.id === activity.id);
-      if (task) setTaskStatus(task.id, 'READ');
-      setReadTaskIds(getReadIds(READ_TASKS_KEY));
+      // Store current status so it won't be "unread" next load
+      const saved = getStoredStatuses(TASK_STATUSES_KEY);
+      if (saved[activity.id]) {
+        // Status already stored from loadData — keep it
+      }
       setUnreadTaskCount(prev => Math.max(0, prev - 1));
       router.push('/dashboard/applicant/tasks');
     } else if (activity.type === 'application') {
-      setAppStatus(activity.id, 'APPLIED');
+      markAsRead(READ_APPS_KEY, activity.id);
       setUnreadAppCount(prev => Math.max(0, prev - 1));
       router.push('/dashboard/applicant/applications');
     } else if (activity.type === 'announcement') {
@@ -263,6 +245,28 @@ export default function ApplicantDashboard() {
   if (!session || session.user?.role !== 'APPLICANT') {
     return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Access denied. Applicants only.</p></div>;
   }
+
+  const isActivityUnread = (activity: ActivityItem): boolean => {
+    if (activity.type === 'task') {
+      const readTaskIds = getReadIds(READ_TASKS_KEY);
+      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
+      const isRead = readTaskIds.includes(activity.id);
+      // Find current status from stored statuses (already saved by loadData)
+      const savedStatus = savedTaskStatuses[activity.id];
+      // Check if status changed — but we need the ORIGINAL status, not current
+      // A task is "new unread" if it was never clicked AND its status changed
+      return !isRead;
+    }
+    if (activity.type === 'application') {
+      const readAppIds = getReadIds(READ_APPS_KEY);
+      return !readAppIds.includes(activity.id);
+    }
+    if (activity.type === 'announcement') {
+      const readAnnIds = getReadIds(READ_ANNOUNCEMENTS_KEY);
+      return !readAnnIds.includes(activity.id);
+    }
+    return false;
+  };
 
   return (
     <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line dashboard-grid relative">
@@ -336,19 +340,7 @@ export default function ApplicantDashboard() {
               </div>
             ) : (
               activities.map((activity, index) => {
-                const isUnreadTask = activity.type === 'task' && (() => {
-                  const isRead = readTaskIds.includes(activity.id);
-                  const savedStatus = getTaskStatuses()[activity.id];
-                  // Unread if not read OR status changed (returned task)
-                  return !isRead || (savedStatus && savedStatus !== 'READ');
-                })();
-                const isUnreadApp = activity.type === 'application' && (() => {
-                  const saved = getAppStatuses()[activity.id];
-                  return !saved || saved !== 'APPLIED';
-                })();
-                const isUnreadAnnouncement = activity.type === 'announcement' && !getReadIds(READ_ANNOUNCEMENTS_KEY).includes(activity.id);
-                const isUnread = isUnreadTask || isUnreadApp || isUnreadAnnouncement;
-
+                const isUnread = isActivityUnread(activity);
                 return (
                   <div
                     key={index}
