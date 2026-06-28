@@ -72,6 +72,26 @@ export default function TrackApplicationsPage() {
     }
   };
 
+  const handleCancel = async (applicationId: number) => {
+    setError('');
+    try {
+      const response = await fetch('/api/application/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || 'Failed to cancel application');
+        return;
+      }
+      setApplications(prev => prev.filter(a => a.id !== applicationId));
+      setExpandedId(null);
+    } catch {
+      setError('Failed to cancel application');
+    }
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -193,6 +213,17 @@ export default function TrackApplicationsPage() {
                             </svg>
                             View Resume
                           </a>
+                        </div>
+                      )}
+                      {/* Cancel button — only if status is APPLIED */}
+                      {application.status === 'APPLIED' && (
+                        <div className="mt-4 pt-3 border-t border-neutral-800/50">
+                          <button
+                            onClick={() => handleCancel(application.id)}
+                            className="px-4 py-2 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                          >
+                            Cancel Application
+                          </button>
                         </div>
                       )}
                     </div>
