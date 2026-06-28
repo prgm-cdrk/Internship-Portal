@@ -195,8 +195,6 @@ export default function TrackApplicationsPage() {
                                   <div className={`h-0.5 rounded-full ${!isTerminal && index < currentStep ? 'bg-white' : 'bg-neutral-800'}`} />
                                 </div>
                               )}
-                                </div>
-                              )}
                             </div>
                           );
                         })}
