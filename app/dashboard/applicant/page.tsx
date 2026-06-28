@@ -112,8 +112,7 @@ export default function ApplicantDashboard() {
       }
       setUnreadTaskCount(unreadTasks);
 
-      // Store current time as last visit (after counting)
-      localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString());
+      // Do NOT update lastVisit here — only update when user clicks to view tasks
 
       // --- Count unread APPLICATIONS ---
       const readAppIds = getReadIds(READ_APPS_KEY);
