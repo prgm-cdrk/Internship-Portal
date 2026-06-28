@@ -69,6 +69,16 @@ export default function RegisterPage() {
       <div className="absolute top-[-200px] left-[-200px] w-[500px] h-[500px] bg-accent-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-[-150px] right-[-150px] w-[400px] h-[400px] bg-accent-primary/3 rounded-full blur-3xl" />
 
+      {/* Floating particles */}
+      <div className="absolute top-20 left-10 w-2 h-2 rounded-full bg-accent-primary/40 animate-float" style={{ animationDelay: '0.5s' }}></div>
+      <div className="absolute top-40 right-20 w-1.5 h-1.5 rounded-full bg-accent-primary/30 animate-float" style={{ animationDelay: '1.5s' }}></div>
+      <div className="absolute bottom-32 left-1/4 w-2 h-2 rounded-full bg-white/20 animate-float" style={{ animationDelay: '2.5s' }}></div>
+      <div className="absolute top-1/2 right-10 w-1.5 h-1.5 rounded-full bg-accent-primary/35 animate-float" style={{ animationDelay: '3.5s' }}></div>
+      <div className="absolute bottom-20 right-1/5 w-2 h-2 rounded-full bg-accent-primary/25 animate-float" style={{ animationDelay: '4.5s' }}></div>
+
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,107,53,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,53,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+
       {/* Registration card - horizontal */}
       <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-4xl relative z-10">
         <div className="bg-dark-800 rounded-2xl overflow-hidden">
