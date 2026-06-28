@@ -4,7 +4,6 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,73 +40,92 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 flex">
-      {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          {/* Logo/Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 via-dark-950 to-dark-950"></div>
+      
+      {/* Glow Effect */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-primary/10 rounded-full blur-3xl opacity-20"></div>
+
+      <div className="relative w-full max-w-md z-10">
+        {/* Main Card */}
+        <div className="bg-dark-800 border border-dark-700 rounded-3xl shadow-2xl p-8 md:p-10">
+          
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-dark rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-2xl">📚</span>
+              </div>
+            </div>
+            <h1 className="text-5xl font-bold text-white mb-3">
               Intern<span className="text-accent-primary">Hub</span>
             </h1>
-            <p className="text-dark-300 text-sm">
-              Welcome back to your internship portal
+            <p className="text-dark-300 text-sm font-light tracking-wide">
+              WELCOME BACK TO YOUR JOURNEY
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
-              <p className="text-red-400 text-sm">{error}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+              <p className="text-red-400 text-sm font-medium">⚠️ {error}</p>
             </div>
           )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Email Address
+            
+            {/* Email Field */}
+            <div className="relative">
+              <label className="block text-white font-semibold mb-3 text-sm">
+                EMAIL ADDRESS
               </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                  required
+                />
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-accent-primary">✉️</span>
+              </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Password
+            {/* Password Field */}
+            <div className="relative">
+              <label className="block text-white font-semibold mb-3 text-sm">
+                PASSWORD
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                  required
+                />
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-accent-primary">🔒</span>
+              </div>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-accent-primary hover:bg-accent-light text-white font-bold py-3 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              className="w-full bg-gradient-to-r from-accent-primary to-accent-light hover:shadow-lg hover:shadow-accent-primary/50 text-white font-bold py-4 rounded-xl transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8 transform hover:scale-105 active:scale-95"
             >
-              {loading ? 'Logging in...' : 'Sign In'}
+              {loading ? '⏳ SIGNING IN...' : '✨ SIGN IN'}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="flex items-center my-6">
+          <div className="flex items-center my-8">
             <div className="flex-1 border-t border-dark-700"></div>
-            <span className="px-3 text-dark-400 text-sm">or</span>
+            <span className="px-3 text-dark-400 text-xs font-light">or</span>
             <div className="flex-1 border-t border-dark-700"></div>
           </div>
 
@@ -116,39 +134,29 @@ export default function LoginPage() {
             Don&apos;t have an account?{' '}
             <Link
               href="/register"
-              className="text-accent-primary hover:text-accent-light font-medium transition"
+              className="text-accent-primary hover:text-accent-light font-bold transition"
             >
-              Sign up here
+              Create one here →
             </Link>
           </p>
 
-          {/* Test Credentials Info */}
-          <div className="mt-8 bg-dark-800 border border-dark-700 rounded-lg p-4">
-            <p className="text-dark-300 text-xs font-medium mb-2">Test Credentials:</p>
-            <p className="text-dark-400 text-xs">
-              Email: <span className="text-accent-primary">prgm.cdrk@gmail.com</span>
-            </p>
-            <p className="text-dark-400 text-xs">
-              Password: <span className="text-accent-primary">MyOwnerP@ssw0rd123</span>
-            </p>
+          {/* Test Credentials */}
+          <div className="mt-8 bg-dark-900 border border-accent-primary/30 rounded-xl p-5">
+            <p className="text-accent-primary text-xs font-bold mb-3 uppercase tracking-wider">🔐 Test Credentials</p>
+            <div className="space-y-2">
+              <p className="text-dark-300 text-xs">
+                Email: <span className="text-accent-primary font-mono">prgm.cdrk@gmail.com</span>
+              </p>
+              <p className="text-dark-300 text-xs">
+                Password: <span className="text-accent-primary font-mono">MyOwnerP@ssw0rd123</span>
+              </p>
+            </div>
           </div>
-
         </div>
-      </div>
 
-      {/* Right Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-dark-900 items-center justify-center">
-        <img
-          src="/login-illustration.svg"
-          alt="Internship Portal Illustration"
-          className="w-64 opacity-80"
-        />
-      </div>
-
-      {/* Bottom Info - centered at bottom of window */}
-      <div className="fixed bottom-0 left-0 right-0 text-center p-4">
-        <p className="text-dark-400 text-xs">
-          © 2024 InternHub. All rights reserved.
+        {/* Footer */}
+        <p className="text-center text-dark-400 text-xs mt-8 font-light">
+          © 2024 InternHub. Crafting meaningful internship experiences.
         </p>
       </div>
     </div>
