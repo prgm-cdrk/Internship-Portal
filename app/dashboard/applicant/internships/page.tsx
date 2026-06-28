@@ -26,6 +26,11 @@ type Internship = {
   };
 };
 
+// Type definition for tracking which internships the user has already applied to
+type AppliedIds = {
+  [key: number]: boolean;
+};
+
 export default function BrowseInternshipsPage() {
   const { data: session, status } = useSession();   // Get session and loading status
   const router = useRouter();
@@ -34,6 +39,8 @@ export default function BrowseInternshipsPage() {
   const [internships, setInternships] = useState<Internship[]>([]);  // List of internships
   const [loading, setLoading] = useState(true);     // Loading state while fetching
   const [error, setError] = useState('');           // Error messages
+  const [appliedIds, setAppliedIds] = useState<AppliedIds>({});  // Track applied internships
+  const [applyingId, setApplyingId] = useState<number | null>(null);  // Track which internship is being applied to
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
@@ -48,6 +55,35 @@ export default function BrowseInternshipsPage() {
       fetchInternships();
     }
   }, [status]);
+
+  // Handle applying to an internship
+  const handleApply = async (internshipId: number) => {
+    setError('');
+    setApplyingId(internshipId);
+
+    try {
+      const response = await fetch('/api/application/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ internshipId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to apply');
+        setApplyingId(null);
+        return;
+      }
+
+      // Mark this internship as applied
+      setAppliedIds(prev => ({ ...prev, [internshipId]: true }));
+      setApplyingId(null);
+    } catch (err) {
+      setError('Failed to apply');
+      setApplyingId(null);
+    }
+  };
 
   // Fetch all internships from the browse API
   const fetchInternships = async () => {
@@ -119,6 +155,20 @@ export default function BrowseInternshipsPage() {
                 <p style={{ margin: '0', fontSize: '12px', color: '#999' }}>
                   Slots: {internship.slots} | Deadline: {new Date(internship.deadline).toLocaleDateString()}
                 </p>
+                <button
+                  onClick={() => handleApply(internship.id)}
+                  disabled={appliedIds[internship.id] || applyingId === internship.id}
+                  style={{
+                    padding: '8px 16px',
+                    cursor: appliedIds[internship.id] ? 'default' : 'pointer',
+                    backgroundColor: appliedIds[internship.id] ? '#6c757d' : '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px',
+                  }}
+                >
+                  {appliedIds[internship.id] ? 'Applied' : applyingId === internship.id ? 'Applying...' : 'Apply'}
+                </button>
               </div>
             </div>
           ))}
