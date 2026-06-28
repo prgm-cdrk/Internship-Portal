@@ -1,18 +1,32 @@
 // Dashboard Sidebar component
-// Shared across all dashboard pages (Owner, Company, Applicant)
-// Contains navigation buttons that load content in the main area
+// Collapsible sidebar - shows icons only when collapsed
+// Auto-collapses on smaller screens, can be toggled manually
 
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function DashboardSidebar() {
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   const role = session?.user?.role;
+
+  // Auto-collapse on small screens
+  useEffect(() => {
+    const checkWidth = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(true);
+      }
+    };
+    checkWidth();
+    window.addEventListener('resize', checkWidth);
+    return () => window.removeEventListener('resize', checkWidth);
+  }, []);
 
   const navItems = (() => {
     switch (role) {
@@ -82,35 +96,49 @@ export default function DashboardSidebar() {
   })();
 
   return (
-    <aside className="w-56 bg-neutral-950 border-r border-neutral-800 flex flex-col shrink-0">
+    <aside className={`${collapsed ? 'w-16' : 'w-56'} bg-neutral-950 border-r border-neutral-800 flex flex-col shrink-0 transition-all duration-300`}>
+      {/* Toggle button */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center justify-center py-3 text-neutral-500 hover:text-white hover:bg-neutral-900 transition-colors border-b border-neutral-800"
+        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        <svg className={`w-4 h-4 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+        </svg>
+      </button>
+
       {/* Nav items */}
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
+      <nav className="flex-1 py-2 px-1.5 space-y-0.5">
         {navItems.map((item) => {
           const isActive = pathname === item.path;
           return (
             <button
               key={item.path}
               onClick={() => router.push(item.path)}
+              title={collapsed ? item.label : undefined}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-neutral-800 text-white'
                   : 'text-neutral-500 hover:text-white hover:bg-neutral-900'
-              }`}
+              } ${collapsed ? 'justify-center' : ''}`}
             >
               <span className={isActive ? 'text-white' : 'text-neutral-600'}>{item.icon}</span>
-              {item.label}
+              {!collapsed && <span>{item.label}</span>}
             </button>
           );
         })}
       </nav>
 
       {/* Bottom section */}
-      <div className="p-3 border-t border-neutral-800">
-        <div className="px-3 py-2">
-          <p className="text-xs text-neutral-600 uppercase tracking-wider">Signed in as</p>
-          <p className="text-sm text-neutral-400 truncate mt-0.5">{session?.user?.name}</p>
+      {!collapsed && (
+        <div className="p-3 border-t border-neutral-800">
+          <div className="px-3 py-2">
+            <p className="text-xs text-neutral-600 uppercase tracking-wider">Signed in as</p>
+            <p className="text-sm text-neutral-400 truncate mt-0.5">{session?.user?.name}</p>
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }
