@@ -119,7 +119,7 @@ model Task {
   company Company @relation(fields: [companyId], references: [id]) // linked to Company model
   reviewedAt DateTime? // Set when manager accepts the completed task
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) // Updated when status changes (e.g., returned to ongoing)
+  updatedAt DateTime @updatedAt // Updated when status changes (e.g., returned to ongoing)
 }
 
 model Announcement {

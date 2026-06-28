@@ -99,22 +99,30 @@ export default function ApplicantDashboard() {
         announcements: allAnnouncements.length
       });
 
-      // --- Count unread TASKS (count-based: new tasks = badge) ---
+      // --- Count unread TASKS ---
+      // Badge = new tasks (count increased) + returned tasks (status changed from COMPLETED to ONGOING)
       const currentTaskCount = allTasks.length;
       const prevTaskCount = parseInt(localStorage.getItem(TASK_COUNT_KEY) || '0');
       const newTasks = Math.max(0, currentTaskCount - prevTaskCount);
-      setUnreadTaskCount(newTasks);
+
+      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
+      let returnedTasks = 0;
+      for (const task of allTasks) {
+        const savedStatus = savedTaskStatuses[task.id];
+        // Returned = status was COMPLETED, now ONGOING (updatedAt > createdAt means it was updated)
+        const wasCompleted = savedStatus === 'COMPLETED';
+        const isNowOngoing = task.status === 'ONGOING';
+        if (wasCompleted && isNowOngoing) {
+          returnedTasks++;
+        }
+        // Store current status for next load
+        setStoredStatus(TASK_STATUSES_KEY, task.id, task.status);
+      }
+
+      setUnreadTaskCount(newTasks + returnedTasks);
 
       // Store current task count for next load
       localStorage.setItem(TASK_COUNT_KEY, currentTaskCount.toString());
-
-      // Mark returned tasks in activity feed (status changed from COMPLETED to ONGOING)
-      for (const task of allTasks) {
-        const savedStatus = getStoredStatuses(TASK_STATUSES_KEY);
-        const oldStatus = savedStatus[task.id];
-        // Store current status for returned detection
-        setStoredStatus(TASK_STATUSES_KEY, task.id, task.status);
-      }
 
       // --- Count unread APPLICATIONS ---
       const readAppIds = getReadIds(READ_APPS_KEY);
