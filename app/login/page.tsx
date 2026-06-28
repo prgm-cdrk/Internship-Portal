@@ -42,9 +42,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Minimal Geometric Accents */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl"></div>
-      <div className="absolute bottom-32 left-10 w-48 h-48 rounded-full bg-accent-primary/5 blur-3xl"></div>
+      {/* Animated Geometric Background Elements */}
+      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-white/5 blur-3xl animate-float"></div>
+      <div className="absolute bottom-32 left-10 w-48 h-48 rounded-full bg-accent-primary/5 blur-3xl animate-pulse_slow"></div>
+      <div className="absolute top-1/3 left-1/4 w-32 h-32 rounded-full border border-accent-primary/10 animate-rotate_slow"></div>
+      <div className="absolute bottom-1/4 right-1/3 w-40 h-40 rounded-full bg-dark-800/20 blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
 
       <div className="relative w-full max-w-md z-10">
         
