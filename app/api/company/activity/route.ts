@@ -40,13 +40,13 @@ export async function GET(req: Request) {
       take: 10
     });
 
-    // Fetch recent tasks (last 10)
+    // Fetch recent tasks (last 10) — sorted by updatedAt to capture returned tasks
     const recentTasks = await prisma.task.findMany({
       where: { companyId: company.id },
       include: {
         user: { select: { name: true } }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       take: 10
     });
 
@@ -67,9 +67,13 @@ export async function GET(req: Request) {
       })),
       ...recentTasks.map(task => ({
         type: 'task' as const,
-        message: `Task "${task.title}" assigned to ${task.user.name}`,
+        message: task.status === 'ONGOING' && task.updatedAt > task.createdAt
+          ? `Task "${task.title}" returned to ${task.user.name}`
+          : `Task "${task.title}" assigned to ${task.user.name}`,
         detail: task.status,
-        timestamp: task.createdAt
+        timestamp: task.status === 'ONGOING' && task.updatedAt > task.createdAt
+          ? task.updatedAt
+          : task.createdAt
       })),
       ...recentAnnouncements.map(ann => ({
         type: 'announcement' as const,

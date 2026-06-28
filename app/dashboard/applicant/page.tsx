@@ -24,6 +24,7 @@ type ActivityItem = {
 
 // localStorage keys
 const READ_TASKS_KEY = 'readTasks';
+const TASK_STATUSES_KEY = 'taskStatuses';
 const APP_STATUSES_KEY = 'appStatuses';
 const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
 
@@ -55,6 +56,20 @@ function setAppStatus(id: number, status: string) {
   const statuses = getAppStatuses();
   statuses[id] = status;
   localStorage.setItem(APP_STATUSES_KEY, JSON.stringify(statuses));
+}
+
+function getTaskStatuses(): Record<number, string> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const stored = localStorage.getItem(TASK_STATUSES_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch { return {}; }
+}
+
+function setTaskStatus(id: number, status: string) {
+  const statuses = getTaskStatuses();
+  statuses[id] = status;
+  localStorage.setItem(TASK_STATUSES_KEY, JSON.stringify(statuses));
 }
 
 export default function ApplicantDashboard() {
@@ -96,8 +111,20 @@ export default function ApplicantDashboard() {
       });
 
       const readTaskIdsNow = getReadIds(READ_TASKS_KEY);
+      const savedTaskStatuses = getTaskStatuses();
       const allTasks = taskData.tasks || [];
-      setUnreadTaskCount(allTasks.filter((t: any) => !readTaskIdsNow.includes(t.id)).length);
+
+      // Count unread tasks: not read OR status changed (e.g., returned from COMPLETED to ONGOING)
+      let unreadTasks = 0;
+      for (const task of allTasks) {
+        const savedStatus = savedTaskStatuses[task.id];
+        const isRead = readTaskIdsNow.includes(task.id);
+        const statusChanged = savedStatus && savedStatus !== task.status;
+        if (!isRead || statusChanged) {
+          unreadTasks++;
+        }
+      }
+      setUnreadTaskCount(unreadTasks);
 
       // Count applications with status changes
       const savedStatuses = getAppStatuses();
@@ -158,6 +185,11 @@ export default function ApplicantDashboard() {
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
        .slice(0, 5);
 
+      // Store current task statuses for change detection
+      for (const task of taskData.tasks || []) {
+        setTaskStatus(task.id, task.status);
+      }
+
       setActivities(all);
     } catch { /* silent */ }
     setActivityLoading(false);
@@ -166,6 +198,9 @@ export default function ApplicantDashboard() {
   const handleActivityClick = (activity: ActivityItem) => {
     if (activity.type === 'task') {
       markAsRead(READ_TASKS_KEY, activity.id);
+      // Also update stored status so status changes are no longer "unread"
+      const task = activities.find(a => a.id === activity.id);
+      if (task) setTaskStatus(task.id, 'READ');
       setReadTaskIds(getReadIds(READ_TASKS_KEY));
       setUnreadTaskCount(prev => Math.max(0, prev - 1));
       router.push('/dashboard/applicant/tasks');
@@ -298,7 +333,12 @@ export default function ApplicantDashboard() {
               </div>
             ) : (
               activities.map((activity, index) => {
-                const isUnreadTask = activity.type === 'task' && !readTaskIds.includes(activity.id);
+                const isUnreadTask = activity.type === 'task' && (() => {
+                  const isRead = readTaskIds.includes(activity.id);
+                  const savedStatus = getTaskStatuses()[activity.id];
+                  // Unread if not read OR status changed (returned task)
+                  return !isRead || (savedStatus && savedStatus !== 'READ');
+                })();
                 const isUnreadApp = activity.type === 'application' && (() => {
                   const saved = getAppStatuses()[activity.id];
                   return !saved || saved !== 'APPLIED';
