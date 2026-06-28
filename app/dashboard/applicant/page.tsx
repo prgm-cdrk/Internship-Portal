@@ -200,17 +200,36 @@ export default function ApplicantDashboard() {
     }
   };
 
+  const handleMarkAllRead = (type: 'task' | 'application' | 'announcement') => {
+    if (type === 'task') {
+      const allTaskIds = activities.filter(a => a.type === 'task').map(a => a.id);
+      allTaskIds.forEach(id => markAsRead(READ_TASKS_KEY, id));
+      setUnreadTaskCount(0);
+      router.push('/dashboard/applicant/tasks');
+    } else if (type === 'application') {
+      const allAppIds = activities.filter(a => a.type === 'application').map(a => a.id);
+      allAppIds.forEach(id => markAsRead(READ_APPS_KEY, id));
+      setUnreadAppCount(0);
+      router.push('/dashboard/applicant/applications');
+    } else if (type === 'announcement') {
+      const allAnnIds = activities.filter(a => a.type === 'announcement').map(a => a.id);
+      allAnnIds.forEach(id => markAsRead(READ_ANNOUNCEMENTS_KEY, id));
+      setUnreadAnnouncementCount(0);
+      router.push('/dashboard/applicant/announcements');
+    }
+  };
+
   const actions = [
-    { label: 'Browse Internships', desc: 'Find and apply to opportunities', path: '/dashboard/applicant/internships', badge: 0, icon: (
+    { label: 'Browse Internships', desc: 'Find and apply to opportunities', badge: 0, onClick: () => router.push('/dashboard/applicant/internships'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
     )},
-    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', badge: unreadAppCount, icon: (
+    { label: 'My Applications', desc: 'Track your application status', badge: unreadAppCount, onClick: () => handleMarkAllRead('application'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'My Tasks', desc: 'View assigned tasks', path: '/dashboard/applicant/tasks', badge: unreadTaskCount, icon: (
+    { label: 'My Tasks', desc: 'View assigned tasks', badge: unreadTaskCount, onClick: () => handleMarkAllRead('task'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', badge: unreadAnnouncementCount, icon: (
+    { label: 'Announcements', desc: 'See company updates', badge: unreadAnnouncementCount, onClick: () => handleMarkAllRead('announcement'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
     )},
   ];
@@ -298,7 +317,7 @@ export default function ApplicantDashboard() {
           {actions.map((action) => (
             <button
               key={action.label}
-              onClick={() => router.push(action.path)}
+              onClick={action.onClick}
               className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center gap-4 text-left transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-700 group relative"
             >
               {action.badge > 0 && (
