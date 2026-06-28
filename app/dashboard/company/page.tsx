@@ -139,18 +139,9 @@ export default function CompanyDashboard() {
     <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8 bg-gradient-to-r from-neutral-900 via-neutral-900 to-neutral-800 border border-neutral-800 rounded-2xl p-6 -mx-8 -mt-8 mb-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Company Dashboard</h1>
-              <p className="text-neutral-400 text-sm mt-0.5">{company.name}</p>
-            </div>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white tracking-wide">Company Dashboard</h1>
+          <p className="text-neutral-500 text-sm mt-1 tracking-wider">{company.name}</p>
         </div>
 
         {/* Actions grid */}
