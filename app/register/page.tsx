@@ -135,7 +135,7 @@ export default function RegisterPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="John Doe"
-                      className="w-full px-3 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-accent-primary transition-colors"
+                      className="w-full px-3 py-2.5 bg-dark-900/50 border border-dark-700 rounded-lg text-dark-200 text-sm placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors"
                     />
                   </div>
                   <div>
@@ -145,7 +145,7 @@ export default function RegisterPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-3 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-accent-primary transition-colors"
+                      className="w-full px-3 py-2.5 bg-dark-900/50 border border-dark-700 rounded-lg text-dark-200 text-sm placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -159,7 +159,7 @@ export default function RegisterPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="At least 6 characters"
-                      className="w-full px-3 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-accent-primary transition-colors"
+                      className="w-full px-3 py-2.5 bg-dark-900/50 border border-dark-700 rounded-lg text-dark-200 text-sm placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors"
                     />
                   </div>
                   <div>
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Re-enter password"
-                      className="w-full px-3 py-2.5 bg-dark-900 border border-dark-600 rounded-lg text-white text-sm placeholder-dark-500 focus:outline-none focus:border-accent-primary transition-colors"
+                      className="w-full px-3 py-2.5 bg-dark-900/50 border border-dark-700 rounded-lg text-dark-200 text-sm placeholder-dark-500 focus:outline-none focus:border-dark-500 transition-colors"
                     />
                   </div>
                 </div>

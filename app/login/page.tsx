@@ -99,7 +99,7 @@ export default function LoginPage() {
             
             {/* Email Field */}
             <div>
-              <label className="block text-dark-200 font-medium mb-3 text-sm">
+              <label className="block text-dark-400 text-sm mb-1.5">
                 Email
               </label>
               <input
@@ -107,14 +107,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
+                className="w-full bg-dark-900/50 border border-dark-700 rounded-lg px-4 py-3 text-dark-200 placeholder-dark-500 focus:outline-none focus:border-dark-500 transition"
                 required
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label className="block text-dark-200 font-medium mb-3 text-sm">
+              <label className="block text-dark-400 text-sm mb-1.5">
                 Password
               </label>
               <input
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/30 transition"
+                className="w-full bg-dark-900/50 border border-dark-700 rounded-lg px-4 py-3 text-dark-200 placeholder-dark-500 focus:outline-none focus:border-dark-500 transition"
                 required
               />
             </div>
