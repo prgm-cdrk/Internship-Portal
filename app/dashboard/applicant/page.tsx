@@ -111,15 +111,8 @@ export default function ApplicantDashboard() {
       });
 
       const readTaskIdsNow = getReadIds(READ_TASKS_KEY);
-      const allTasks = taskData.tasks || [];
-
-      // Store current task statuses for change detection
-      for (const task of allTasks) {
-        setTaskStatus(task.id, task.status);
-      }
-
-      // Now re-read to get updated statuses
       const savedTaskStatuses = getTaskStatuses();
+      const allTasks = taskData.tasks || [];
 
       // Count unread tasks: not read OR status changed (e.g., returned from COMPLETED to ONGOING)
       let unreadTasks = 0;
