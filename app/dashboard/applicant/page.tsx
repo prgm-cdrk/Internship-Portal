@@ -23,8 +23,7 @@ type ActivityItem = {
 };
 
 // localStorage keys
-const READ_TASKS_KEY = 'readTasks';
-const TASK_COUNT_KEY = 'taskCount';
+const LAST_VISIT_KEY = 'lastVisit';
 const READ_APPS_KEY = 'readApps';
 const APP_STATUSES_KEY = 'appStatuses';
 const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
@@ -100,29 +99,21 @@ export default function ApplicantDashboard() {
       });
 
       // --- Count unread TASKS ---
-      // Badge = new tasks (count increased) + returned tasks (status changed from COMPLETED to ONGOING)
-      const currentTaskCount = allTasks.length;
-      const prevTaskCount = parseInt(localStorage.getItem(TASK_COUNT_KEY) || '0');
-      const newTasks = Math.max(0, currentTaskCount - prevTaskCount);
-
-      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
-      let returnedTasks = 0;
+      // A task is "unread" if its updatedAt is newer than the last time we visited the dashboard
+      // This catches both new tasks AND returned tasks
+      const lastVisit = localStorage.getItem(LAST_VISIT_KEY);
+      const lastVisitTime = lastVisit ? new Date(lastVisit).getTime() : 0;
+      let unreadTasks = 0;
       for (const task of allTasks) {
-        const savedStatus = savedTaskStatuses[task.id];
-        // Returned = status was COMPLETED, now ONGOING (updatedAt > createdAt means it was updated)
-        const wasCompleted = savedStatus === 'COMPLETED';
-        const isNowOngoing = task.status === 'ONGOING';
-        if (wasCompleted && isNowOngoing) {
-          returnedTasks++;
+        const taskUpdated = new Date(task.updatedAt || task.createdAt).getTime();
+        if (taskUpdated > lastVisitTime) {
+          unreadTasks++;
         }
-        // Store current status for next load
-        setStoredStatus(TASK_STATUSES_KEY, task.id, task.status);
       }
+      setUnreadTaskCount(unreadTasks);
 
-      setUnreadTaskCount(newTasks + returnedTasks);
-
-      // Store current task count for next load
-      localStorage.setItem(TASK_COUNT_KEY, currentTaskCount.toString());
+      // Store current time as last visit (after counting)
+      localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString());
 
       // --- Count unread APPLICATIONS ---
       const readAppIds = getReadIds(READ_APPS_KEY);
@@ -187,7 +178,8 @@ export default function ApplicantDashboard() {
 
   const handleActivityClick = (activity: ActivityItem) => {
     if (activity.type === 'task') {
-      // Reset task count — user has seen the tasks
+      // Mark all tasks as seen by updating lastVisit
+      localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString());
       setUnreadTaskCount(0);
       router.push('/dashboard/applicant/tasks');
     } else if (activity.type === 'application') {
@@ -222,7 +214,7 @@ export default function ApplicantDashboard() {
     { label: 'My Applications', desc: 'Track your application status', badge: unreadAppCount, onClick: () => handleMarkAllRead('application'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'My Tasks', desc: 'View assigned tasks', badge: unreadTaskCount, onClick: () => { setUnreadTaskCount(0); router.push('/dashboard/applicant/tasks'); }, icon: (
+    { label: 'My Tasks', desc: 'View assigned tasks', badge: unreadTaskCount, onClick: () => { localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString()); setUnreadTaskCount(0); router.push('/dashboard/applicant/tasks'); }, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
     )},
     { label: 'Announcements', desc: 'See company updates', badge: unreadAnnouncementCount, onClick: () => handleMarkAllRead('announcement'), icon: (
