@@ -1,13 +1,13 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,15 +41,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 via-dark-950 to-dark-950 pointer-events-none"></div>
-
-      <div className="relative w-full max-w-md">
-        {/* Card */}
-        <div className="bg-dark-800 border border-dark-700 rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen bg-dark-950 flex">
+      {/* Left Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
           {/* Logo/Header */}
-          <div className="text-center mb-8">
+          <div className="mb-8">
             <h1 className="text-4xl font-bold text-white mb-2">
               Intern<span className="text-accent-primary">Hub</span>
             </h1>
@@ -77,7 +74,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
+                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
                 required
               />
             </div>
@@ -92,7 +89,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-dark-900 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
+                className="w-full bg-dark-800 border border-dark-700 rounded-lg px-4 py-3 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/20 transition"
                 required
               />
             </div>
@@ -116,7 +113,7 @@ export default function LoginPage() {
 
           {/* Register Link */}
           <p className="text-center text-dark-300 text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               href="/register"
               className="text-accent-primary hover:text-accent-light font-medium transition"
@@ -126,7 +123,7 @@ export default function LoginPage() {
           </p>
 
           {/* Test Credentials Info */}
-          <div className="mt-8 bg-dark-900 border border-dark-700 rounded-lg p-4">
+          <div className="mt-8 bg-dark-800 border border-dark-700 rounded-lg p-4">
             <p className="text-dark-300 text-xs font-medium mb-2">Test Credentials:</p>
             <p className="text-dark-400 text-xs">
               Email: <span className="text-accent-primary">prgm.cdrk@gmail.com</span>
@@ -135,12 +132,27 @@ export default function LoginPage() {
               Password: <span className="text-accent-primary">MyOwnerP@ssw0rd123</span>
             </p>
           </div>
-        </div>
 
-        {/* Bottom Info */}
-        <p className="text-center text-dark-400 text-xs mt-6">
-          © 2024 InternHub. All rights reserved.
-        </p>
+          {/* Bottom Info */}
+          <p className="text-center text-dark-400 text-xs mt-8">
+            © 2024 InternHub. All rights reserved.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side - Illustration */}
+      <div className="hidden lg:flex lg:w-1/2 bg-dark-900 items-center justify-center relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/20 via-dark-900 to-dark-800"></div>
+        
+        {/* Illustration */}
+        <div className="relative z-10 p-12">
+          <img
+            src="/login-illustration.svg"
+            alt="Internship Portal Illustration"
+            className="w-full max-w-lg"
+          />
+        </div>
       </div>
     </div>
   );
