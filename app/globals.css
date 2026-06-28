@@ -122,6 +122,7 @@ body {
 
 .animate-scan-line {
   position: relative;
+  overflow: hidden;
 }
 
 .animate-scan-line::before {
