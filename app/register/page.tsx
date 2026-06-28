@@ -21,6 +21,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -133,7 +134,6 @@ export default function RegisterPage() {
           >
             <option value="APPLICANT">Applicant</option>
             <option value="COMPANY">Company Manager</option>
-            <option value="OWNER">Owner</option>
           </select>
         </div>
 
@@ -147,7 +147,7 @@ export default function RegisterPage() {
       </form>
 
       <p>
-        Already have an account? <a href="/login">Login here</a>
+        Already have an account? <Link href="/login">Login here</Link>
       </p>
     </div>
   );

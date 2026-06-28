@@ -18,15 +18,23 @@ enum Role {
   APPLICANT
 }
 
+enum PermissionLevel {
+  ADMIN
+  MODERATOR
+  VIEWER
+}
+
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String 
-  password String
-  role Role 
-  applications Application[] // create relation to Application model
-  tasks Task[] // linked to Task model
-  createdAt DateTime @default(now())
+  id              Int     @id @default(autoincrement())
+  email           String  @unique
+  name            String
+  password        String
+  role            Role
+  permissionLevel PermissionLevel?  // null for APPLICANT/COMPANY, set for MEMBERS
+  createdBy       Int?               // who created this user (for audit)
+  applications    Application[]
+  tasks           Task[]
+  createdAt       DateTime @default(now())
 }
 
 model Company {
