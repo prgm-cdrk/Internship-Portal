@@ -1,19 +1,17 @@
-// This is the Owner Dashboard page - only accessible by users with OWNER role
-// It shows system-wide statistics: total users, companies, internships, revenue
-// It provides quick action buttons to manage users, companies, and subscriptions
-// Unauthorized users (non-owners) see an "Access denied" message
+// Owner Dashboard page - only accessible by users with OWNER role
+// Shows system-wide statistics: total users, companies, internships, revenue
+// Provides quick action buttons to manage users, companies, and subscriptions
 
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';   // useSession gets current user, signOut logs out
-import { useRouter } from 'next/navigation';              // useRouter for redirecting
-import { useState, useEffect } from 'react';              // useState for data, useEffect for fetching
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function OwnerDashboard() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // State for platform statistics
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalCompanies: 0,
@@ -21,35 +19,26 @@ export default function OwnerDashboard() {
     totalRevenue: 0,
     activeSubscriptions: 0
   });
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Redirect to login if user is not authenticated or not OWNER
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-
-    // Wait until session is loaded
     if (status === 'loading') return;
-
-    // Block access if not OWNER
     if (session?.user?.role !== 'OWNER') {
       router.push('/login');
       return;
     }
-
-    // Fetch platform statistics when session is ready
     fetchStats();
   }, [status, session, router]);
 
-  // Fetch platform-wide statistics from the admin API
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/owner/stats');
       const data = await response.json();
-
       if (response.ok) {
         setStats(data.stats);
       } else {
@@ -62,152 +51,109 @@ export default function OwnerDashboard() {
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <p className="text-dark-300">Loading...</p>
+      </div>
+    );
   }
 
-  // Block access if not authenticated or not an OWNER
   if (!session || session.user?.role !== 'OWNER') {
-    return <p>Access denied. Owner only.</p>;
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <p className="text-dark-300">Access denied. Owner only.</p>
+      </div>
+    );
   }
+
+  const statCards = [
+    { label: 'Total Users', value: stats.totalUsers, color: 'text-accent-primary', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    )},
+    { label: 'Total Companies', value: stats.totalCompanies, color: 'text-success', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+    )},
+    { label: 'Total Internships', value: stats.totalInternships, color: 'text-accent-light', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+    )},
+    { label: 'Active Subscriptions', value: stats.activeSubscriptions, color: 'text-dark-300', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+    )},
+    { label: 'Total Revenue', value: `₱${stats.totalRevenue.toLocaleString()}`, color: 'text-success', icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    )}
+  ];
+
+  const actions = [
+    { label: 'Manage Users', path: '/dashboard/owner/users', color: 'bg-accent-primary hover:bg-accent-secondary', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    )},
+    { label: 'Manage Companies', path: '/dashboard/owner/companies', color: 'bg-success hover:bg-emerald-600', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+    )},
+    { label: 'Subscriptions', path: '/dashboard/owner/subscriptions', color: 'bg-dark-700 hover:bg-dark-600', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+    )},
+    { label: 'System Settings', path: '/dashboard/owner/settings', color: 'bg-dark-700 hover:bg-dark-600', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+    )}
+  ];
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Owner Dashboard</h1>
-      <p>Welcome, {session.user?.name}! 👑</p>
+    <div className="min-h-screen bg-dark-950 p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Owner Dashboard</h1>
+            <p className="text-dark-300 mt-1">Welcome back, {session.user?.name}</p>
+          </div>
+          <button
+            onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
+            className="px-4 py-2 bg-dark-800 text-dark-300 border border-dark-600 rounded-xl hover:border-dark-400 hover:text-white transition-colors text-sm"
+          >
+            Sign Out
+          </button>
+        </div>
 
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
+        {/* Error */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-8">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
 
-      {/* System Overview Stats - shows key platform metrics */}
-      <div style={{ marginTop: '30px' }}>
-        <h2>System Overview</h2>
-        
-        {/* Stats grid - responsive columns showing key metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px', marginTop: '20px' }}>
-          {/* Total Users card */}
-          <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-            <h3>Total Users</h3>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#007bff' }}>{stats.totalUsers}</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>Applicants + Companies</p>
-          </div>
-          
-          {/* Total Companies card */}
-          <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-            <h3>Total Companies</h3>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>{stats.totalCompanies}</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>Registered employers</p>
-          </div>
-          
-          {/* Total Internships card */}
-          <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-            <h3>Total Internships</h3>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#ff9800' }}>{stats.totalInternships}</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>Job postings</p>
-          </div>
-          
-          {/* Active Subscriptions card */}
-          <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-            <h3>Active Subscriptions</h3>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#9c27b0' }}>{stats.activeSubscriptions}</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>Paid plans</p>
-          </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
+          {statCards.map((stat) => (
+            <div key={stat.label} className="bg-dark-800 border border-dark-700 rounded-xl p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="text-dark-400">{stat.icon}</div>
+                <span className="text-xs text-dark-400 uppercase tracking-wider">{stat.label}</span>
+              </div>
+              <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+            </div>
+          ))}
+        </div>
 
-          {/* Total Revenue card */}
-          <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#e8f5e9' }}>
-            <h3>Total Revenue</h3>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>₱{stats.totalRevenue.toLocaleString()}</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>From subscriptions</p>
+        {/* Quick Actions */}
+        <div>
+          <h2 className="text-xl font-semibold text-white mb-4">Management</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {actions.map((action) => (
+              <button
+                key={action.label}
+                onClick={() => router.push(action.path)}
+                className={`${action.color} text-white font-semibold py-4 px-6 rounded-xl flex items-center gap-3 transition-colors`}
+              >
+                {action.icon}
+                {action.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Quick Actions - navigation buttons to management pages */}
-      <div style={{ marginTop: '40px' }}>
-        <h2>Management</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginTop: '15px' }}>
-          {/* Manage Users button */}
-          <button
-            onClick={() => router.push('/dashboard/owner/users')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            👥 Manage Users
-          </button>
-
-          {/* Manage Companies button */}
-          <button
-            onClick={() => router.push('/dashboard/owner/companies')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            🏢 Manage Companies
-          </button>
-
-          {/* Subscriptions button */}
-          <button
-            onClick={() => router.push('/dashboard/owner/subscriptions')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: '#9c27b0',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            💳 Subscriptions
-          </button>
-
-          {/* System Settings button */}
-          <button
-            onClick={() => router.push('/dashboard/owner/settings')}
-            style={{
-              padding: '12px 20px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            ⚙️ System Settings
-          </button>
-        </div>
-      </div>
-
-      {/* Logout button - signs user out and redirects to login */}
-      <button
-        onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-        style={{
-          marginTop: '40px',
-          padding: '10px 20px',
-          backgroundColor: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
-      >
-        Logout
-      </button>
     </div>
   );
 }

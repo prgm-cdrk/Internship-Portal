@@ -1,14 +1,13 @@
-// This is the Subscriptions Management page - only accessible by OWNER role
-// It displays all subscriptions with company name, plan, status, and expiration
+// Subscriptions Management page - only accessible by OWNER role
+// Displays all subscriptions with company name, plan, status, and expiration
 // Owners can see revenue summary and filter by plan or status
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for a subscription
 type Subscription = {
   id: number;
   plan: string;
@@ -22,7 +21,6 @@ type Subscription = {
   };
 };
 
-// Type definition for summary stats
 type Summary = {
   total: number;
   active: number;
@@ -32,10 +30,9 @@ type Summary = {
 };
 
 export default function OwnerSubscriptionsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  // State
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [summary, setSummary] = useState<Summary>({ total: 0, active: 0, basic: 0, pro: 0, totalRevenue: 0 });
   const [loading, setLoading] = useState(true);
@@ -43,29 +40,23 @@ export default function OwnerSubscriptionsPage() {
   const [filterPlan, setFilterPlan] = useState('ALL');
   const [filterStatus, setFilterStatus] = useState('ALL');
 
-  // Redirect to login if user is not authenticated or not OWNER
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-
     if (status === 'loading') return;
-
     if (session?.user?.role !== 'OWNER') {
       router.push('/login');
       return;
     }
-
     fetchSubscriptions();
   }, [status, session, router]);
 
-  // Fetch all subscriptions from the admin API
   const fetchSubscriptions = async () => {
     try {
       const response = await fetch('/api/owner/subscriptions');
       const data = await response.json();
-
       if (response.ok) {
         setSubscriptions(data.subscriptions);
         setSummary(data.summary);
@@ -79,170 +70,167 @@ export default function OwnerSubscriptionsPage() {
     }
   };
 
-  // Filter subscriptions based on selected plan and status
   const filteredSubscriptions = subscriptions.filter((sub) => {
     const matchPlan = filterPlan === 'ALL' || sub.plan === filterPlan;
     const matchStatus = filterStatus === 'ALL' || sub.status === filterStatus;
     return matchPlan && matchStatus;
   });
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <p className="text-dark-300">Loading...</p>
+      </div>
+    );
   }
 
-  // Block access if not OWNER
   if (!session || session.user?.role !== 'OWNER') {
-    return <p>Access denied. Owner only.</p>;
+    return (
+      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+        <p className="text-dark-300">Access denied. Owner only.</p>
+      </div>
+    );
   }
+
+  const summaryCards = [
+    { label: 'Total Revenue', value: `₱${summary.totalRevenue.toLocaleString()}`, color: 'text-success' },
+    { label: 'Active Subscriptions', value: summary.active, color: 'text-accent-primary', sub: `of ${summary.total} total` },
+    { label: 'BASIC Plans', value: summary.basic, color: 'text-accent-light', sub: '₱299/month each' },
+    { label: 'PRO Plans', value: summary.pro, color: 'text-success', sub: '₱499/month each' }
+  ];
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>Subscriptions Management</h1>
-      <p>View all subscriptions and revenue from paid plans.</p>
-
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
-
-      {/* Revenue Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '30px' }}>
-        {/* Total Revenue card */}
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#e8f5e9' }}>
-          <h3>Total Revenue</h3>
-          <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#28a745' }}>₱{summary.totalRevenue.toLocaleString()}</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>Monthly recurring</p>
-        </div>
-
-        {/* Active Subscriptions card */}
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-          <h3>Active Subscriptions</h3>
-          <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#007bff' }}>{summary.active}</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>of {summary.total} total</p>
-        </div>
-
-        {/* BASIC Plan count */}
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#fff3cd' }}>
-          <h3>BASIC Plans</h3>
-          <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#856404' }}>{summary.basic}</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>₱299/month each</p>
-        </div>
-
-        {/* PRO Plan count */}
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', backgroundColor: '#d4edda' }}>
-          <h3>PRO Plans</h3>
-          <p style={{ fontSize: '28px', fontWeight: 'bold', color: '#155724' }}>{summary.pro}</p>
-          <p style={{ fontSize: '12px', color: '#666' }}>₱499/month each</p>
-        </div>
-      </div>
-
-      {/* Filter buttons */}
-      <div style={{ marginBottom: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        {/* Plan filters */}
-        <span style={{ fontWeight: 'bold', marginRight: '5px' }}>Plan:</span>
-        {['ALL', 'FREE', 'BASIC', 'PRO'].map((plan) => (
-          <button
-            key={plan}
-            onClick={() => setFilterPlan(plan)}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: filterPlan === plan ? '#007bff' : '#f0f0f0',
-              color: filterPlan === plan ? 'white' : 'black',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}
-          >
-            {plan}
+    <div className="min-h-screen bg-dark-950 p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <button onClick={() => router.push('/dashboard/owner')} className="text-dark-400 hover:text-white text-sm mb-4 flex items-center gap-1 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            Back to Dashboard
           </button>
-        ))}
-
-        {/* Status filters */}
-        <span style={{ fontWeight: 'bold', marginLeft: '20px', marginRight: '5px' }}>Status:</span>
-        {['ALL', 'ACTIVE', 'EXPIRED'].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilterStatus(status)}
-            style={{
-              padding: '6px 12px',
-              backgroundColor: filterStatus === status ? '#007bff' : '#f0f0f0',
-              color: filterStatus === status ? 'white' : 'black',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '12px'
-            }}
-          >
-            {status}
-          </button>
-        ))}
-      </div>
-
-      {/* Subscriptions count */}
-      <p style={{ marginBottom: '15px', color: '#666' }}>
-        Showing {filteredSubscriptions.length} of {subscriptions.length} subscriptions
-      </p>
-
-      {/* Subscriptions table */}
-      {filteredSubscriptions.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>No subscriptions found.</p>
+          <h1 className="text-3xl font-bold text-white">Subscriptions Management</h1>
+          <p className="text-dark-300 mt-1">View all subscriptions and revenue from paid plans</p>
         </div>
-      ) : (
-        <div style={{ border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '1px solid #ddd' }}>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Company</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Industry</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Plan</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Price</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Expires</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredSubscriptions.map((sub) => (
-                <tr key={sub.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '12px' }}>
-                    <strong>{sub.company.name}</strong>
-                  </td>
-                  <td style={{ padding: '12px' }}>{sub.company.industry}</td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      backgroundColor: sub.plan === 'FREE' ? '#f0f0f0' : sub.plan === 'BASIC' ? '#fff3cd' : '#d4edda',
-                      color: sub.plan === 'FREE' ? '#666' : sub.plan === 'BASIC' ? '#856404' : '#155724'
-                    }}>
-                      {sub.plan}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    {sub.plan === 'FREE' ? '₱0' : sub.plan === 'BASIC' ? '₱299' : '₱499'}
-                  </td>
-                  <td style={{ padding: '12px' }}>
-                    <span style={{
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      backgroundColor: sub.status === 'ACTIVE' ? '#d4edda' : '#f8d7da',
-                      color: sub.status === 'ACTIVE' ? '#155724' : '#721c24'
-                    }}>
-                      {sub.status}
-                    </span>
-                  </td>
-                  <td style={{ padding: '12px', fontSize: '12px', color: '#666' }}>
-                    {new Date(sub.expiredAt).toLocaleDateString()}
-                  </td>
-                </tr>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {summaryCards.map((card) => (
+            <div key={card.label} className="bg-dark-800 border border-dark-700 rounded-xl p-5">
+              <span className="text-xs text-dark-400 uppercase tracking-wider">{card.label}</span>
+              <p className={`text-2xl font-bold mt-2 ${card.color}`}>{card.value}</p>
+              {card.sub && <p className="text-xs text-dark-400 mt-1">{card.sub}</p>}
+            </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-dark-400 uppercase tracking-wider">Plan:</span>
+            <div className="flex gap-1">
+              {['ALL', 'FREE', 'BASIC', 'PRO'].map((plan) => (
+                <button
+                  key={plan}
+                  onClick={() => setFilterPlan(plan)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    filterPlan === plan
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-dark-800 text-dark-300 border border-dark-700 hover:border-dark-500'
+                  }`}
+                >
+                  {plan}
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-dark-400 uppercase tracking-wider">Status:</span>
+            <div className="flex gap-1">
+              {['ALL', 'ACTIVE', 'EXPIRED'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setFilterStatus(s)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    filterStatus === s
+                      ? 'bg-accent-primary text-white'
+                      : 'bg-dark-800 text-dark-300 border border-dark-700 hover:border-dark-500'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Count */}
+        <p className="text-dark-400 text-sm mb-4">
+          Showing {filteredSubscriptions.length} of {subscriptions.length} subscriptions
+        </p>
+
+        {/* Table */}
+        {filteredSubscriptions.length === 0 ? (
+          <div className="bg-dark-800 border border-dark-700 rounded-xl p-10 text-center">
+            <p className="text-dark-400">No subscriptions found.</p>
+          </div>
+        ) : (
+          <div className="bg-dark-800 border border-dark-700 rounded-xl overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-dark-700">
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Company</th>
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Industry</th>
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Plan</th>
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Price</th>
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Status</th>
+                  <th className="text-left text-xs text-dark-400 uppercase tracking-wider px-5 py-4">Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredSubscriptions.map((sub) => (
+                  <tr key={sub.id} className="border-b border-dark-700/50 hover:bg-dark-700/30 transition-colors">
+                    <td className="px-5 py-4 text-white font-medium">{sub.company.name}</td>
+                    <td className="px-5 py-4 text-dark-300">{sub.company.industry}</td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                        sub.plan === 'FREE'
+                          ? 'bg-dark-700 text-dark-300 border border-dark-600'
+                          : sub.plan === 'BASIC'
+                          ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
+                          : 'bg-success/20 text-success border border-success/30'
+                      }`}>
+                        {sub.plan}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-dark-300">
+                      {sub.plan === 'FREE' ? '₱0' : sub.plan === 'BASIC' ? '₱299' : '₱499'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                        sub.status === 'ACTIVE'
+                          ? 'bg-success/20 text-success border border-success/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      }`}>
+                        {sub.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-dark-400 text-sm">
+                      {new Date(sub.expiredAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
