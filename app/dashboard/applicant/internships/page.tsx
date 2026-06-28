@@ -1,14 +1,12 @@
-// This is the Browse Internships page - where applicants can view all available internships
-// It displays internship listings from all companies
-// Users can see title, company, description, slots, and deadline for each internship
+// Browse Internships page - applicants can view all available internships
+// Uses monotone dark theme matching company manager pages
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for an internship with company info
 type Internship = {
   id: number;
   title: string;
@@ -26,154 +24,134 @@ type Internship = {
   };
 };
 
-// Type definition for tracking which internships the user has already applied to
 type AppliedIds = {
   [key: number]: boolean;
 };
 
 export default function BrowseInternshipsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [appliedIds, setAppliedIds] = useState<AppliedIds>({});
+  const [applyingId, setApplyingId] = useState<number | null>(null);
 
-  // State
-  const [internships, setInternships] = useState<Internship[]>([]);  // List of internships
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-  const [appliedIds, setAppliedIds] = useState<AppliedIds>({});  // Track applied internships
-  const [applyingId, setApplyingId] = useState<number | null>(null);  // Track which internship is being applied to
-
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
 
-  // Fetch internships when session is ready
   useEffect(() => {
     if (status === 'authenticated') {
       fetchInternships();
     }
   }, [status]);
 
-  // Handle applying to an internship
   const handleApply = async (internshipId: number) => {
     setError('');
     setApplyingId(internshipId);
-
     try {
       const response = await fetch('/api/application/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ internshipId })
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         setError(data.error || 'Failed to apply');
         setApplyingId(null);
         return;
       }
-
-      // Mark this internship as applied
       setAppliedIds(prev => ({ ...prev, [internshipId]: true }));
       setApplyingId(null);
-    } catch (err) {
+    } catch {
       setError('Failed to apply');
       setApplyingId(null);
     }
   };
 
-  // Fetch all internships from the browse API
   const fetchInternships = async () => {
     try {
       const response = await fetch('/api/internship/browse');
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to load internships');
         setLoading(false);
         return;
       }
-
-      // Set internships data
       setInternships(data.internships);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('Failed to load internships');
       setLoading(false);
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-neutral-500">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Browse Internships</h1>
-
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {/* Show message if no internships exist */}
-      {internships.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>No internships available at the moment.</p>
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white tracking-wide">Browse Internships</h1>
+          <p className="text-neutral-500 text-sm mt-1">Find and apply to opportunities</p>
         </div>
-      ) : (
-        /* Internships list */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {internships.map((internship) => (
-            <div
-              key={internship.id}
-              style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{internship.title}</h3>
-                  <p style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>
-                    {internship.company.name} • {internship.company.industry}
-                  </p>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        {internships.length === 0 ? (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl px-5 py-16 text-center">
+            <p className="text-neutral-500">No internships available at the moment.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {internships.map((internship) => (
+              <div
+                key={internship.id}
+                className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:bg-neutral-800/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-medium">{internship.title}</h3>
+                    <p className="text-neutral-500 text-sm mt-0.5">
+                      {internship.company.name} &bull; {internship.company.industry}
+                    </p>
+                    <p className="text-neutral-400 text-sm mt-3 leading-relaxed">{internship.description}</p>
+                    <div className="flex items-center gap-4 mt-3">
+                      <span className="text-neutral-500 text-xs">Slots: {internship.slots}</span>
+                      <span className="text-neutral-500 text-xs">Deadline: {new Date(internship.deadline).toLocaleDateString()}</span>
+                      <span className="text-neutral-600 text-xs">{internship._count.applications} applicant(s)</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleApply(internship.id)}
+                    disabled={appliedIds[internship.id] || applyingId === internship.id}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors shrink-0 ${
+                      appliedIds[internship.id]
+                        ? 'bg-neutral-800 text-neutral-500 cursor-default'
+                        : 'bg-neutral-800 text-white hover:bg-neutral-700 border border-neutral-700'
+                    }`}
+                  >
+                    {appliedIds[internship.id] ? 'Applied' : applyingId === internship.id ? 'Applying...' : 'Apply'}
+                  </button>
                 </div>
-                <span style={{
-                  padding: '4px 8px',
-                  borderRadius: '4px',
-                  backgroundColor: '#e9ecef',
-                  fontSize: '12px'
-                }}>
-                  {internship._count.applications} applicant(s)
-                </span>
               </div>
-              <p style={{ margin: '10px 0', color: '#333', lineHeight: '1.5' }}>
-                {internship.description}
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                <p style={{ margin: '0', fontSize: '12px', color: '#999' }}>
-                  Slots: {internship.slots} | Deadline: {new Date(internship.deadline).toLocaleDateString()}
-                </p>
-                <button
-                  onClick={() => handleApply(internship.id)}
-                  disabled={appliedIds[internship.id] || applyingId === internship.id}
-                  style={{
-                    padding: '8px 16px',
-                    cursor: appliedIds[internship.id] ? 'default' : 'pointer',
-                    backgroundColor: appliedIds[internship.id] ? '#6c757d' : '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                  }}
-                >
-                  {appliedIds[internship.id] ? 'Applied' : applyingId === internship.id ? 'Applying...' : 'Apply'}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,14 +1,12 @@
-// This is the Track Applications page - where applicants can see all their internship applications
-// It displays each application with the internship title, company name, and status
-// Status options: APPLIED, REVIEWED, INTERVIEW, ACCEPTED, REJECTED
+// Track Applications page - applicants can see all their internship applications
+// Uses monotone dark theme matching company manager pages
 
 'use client';
 
-import { useSession } from 'next-auth/react';       // useSession gets current user session
-import { useRouter } from 'next/navigation';         // useRouter for redirecting
-import { useState, useEffect } from 'react';         // useState for data, useEffect for fetching
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
-// Type definition for an application with internship and company info
 type Application = {
   id: number;
   status: string;
@@ -26,115 +24,104 @@ type Application = {
   };
 };
 
-// Color mapping for application statuses
-const statusColors: { [key: string]: string } = {
-  APPLIED: '#007bff',      // Blue - just applied
-  REVIEWED: '#ffc107',     // Yellow - being reviewed
-  INTERVIEW: '#17a2b8',    // Cyan - interview scheduled
-  ACCEPTED: '#28a745',     // Green - accepted
-  REJECTED: '#dc3545'      // Red - rejected
+const statusLabels: Record<string, string> = {
+  APPLIED: 'Applied',
+  REVIEWED: 'Reviewed',
+  INTERVIEW: 'Interview',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected'
 };
 
 export default function TrackApplicationsPage() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // State
-  const [applications, setApplications] = useState<Application[]>([]);  // List of applications
-  const [loading, setLoading] = useState(true);     // Loading state while fetching
-  const [error, setError] = useState('');           // Error messages
-
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
 
-  // Fetch applications when session is ready
   useEffect(() => {
     if (status === 'authenticated') {
       fetchApplications();
     }
   }, [status]);
 
-  // Fetch all applications for this applicant
   const fetchApplications = async () => {
     try {
       const response = await fetch('/api/application/my');
       const data = await response.json();
-
-      // If request failed, show error
       if (!response.ok) {
         setError(data.error || 'Failed to load applications');
         setLoading(false);
         return;
       }
-
-      // Set applications data
       setApplications(data.applications);
       setLoading(false);
-    } catch (err) {
+    } catch {
       setError('Failed to load applications');
       setLoading(false);
     }
   };
 
-  // Show loading while session or data is loading
   if (status === 'loading' || loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-neutral-500">Loading...</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>My Applications</h1>
-
-      {/* Display error message if any */}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {/* Show message if no applications exist */}
-      {applications.length === 0 ? (
-        <div style={{ border: '1px solid #ddd', padding: '40px', borderRadius: '8px', textAlign: 'center' }}>
-          <p>You haven&apos;t applied to any internships yet.</p>
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white tracking-wide">My Applications</h1>
+          <p className="text-neutral-500 text-sm mt-1">Track your application status</p>
         </div>
-      ) : (
-        /* Applications list */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          {applications.map((application) => (
-            <div
-              key={application.id}
-              style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <div>
-                  <h3 style={{ margin: '0 0 5px 0' }}>{application.internship.title}</h3>
-                  <p style={{ margin: '0 0 5px 0', color: '#666', fontSize: '14px' }}>
-                    {application.internship.company.name} • {application.internship.company.industry}
-                  </p>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-6">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        {applications.length === 0 ? (
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl px-5 py-16 text-center">
+            <p className="text-neutral-500">You haven&apos;t applied to any internships yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {applications.map((application) => (
+              <div
+                key={application.id}
+                className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:bg-neutral-800/50 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-white font-medium">{application.internship.title}</h3>
+                    <p className="text-neutral-500 text-sm mt-0.5">
+                      {application.internship.company.name} &bull; {application.internship.company.industry}
+                    </p>
+                    <p className="text-neutral-400 text-sm mt-3 leading-relaxed">{application.internship.description}</p>
+                    <div className="flex items-center gap-4 mt-3">
+                      <span className="text-neutral-500 text-xs">Applied: {new Date(application.appliedAt).toLocaleDateString()}</span>
+                      <span className="text-neutral-500 text-xs">Deadline: {new Date(application.internship.deadline).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <span className="px-3 py-1 rounded-md bg-neutral-800 text-neutral-300 text-xs font-medium border border-neutral-700 shrink-0">
+                    {statusLabels[application.status] || application.status}
+                  </span>
                 </div>
-                <span style={{
-                  padding: '4px 12px',
-                  borderRadius: '4px',
-                  backgroundColor: statusColors[application.status] || '#6c757d',
-                  color: 'white',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}>
-                  {application.status}
-                </span>
               </div>
-              <p style={{ margin: '10px 0', color: '#333', lineHeight: '1.5' }}>
-                {application.internship.description}
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                <p style={{ margin: '0', fontSize: '12px', color: '#999' }}>
-                  Applied: {new Date(application.appliedAt).toLocaleDateString()} | Deadline: {new Date(application.internship.deadline).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

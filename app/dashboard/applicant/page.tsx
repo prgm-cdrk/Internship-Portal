@@ -1,129 +1,244 @@
-// This is the Applicant Dashboard page - only accessible by users with APPLICANT role
-// It shows the applicant's application and task stats
-// It provides quick action buttons to browse internships, view applications, and manage tasks
-// Unauthorized users (non-applicants) see an "Access denied" message
+// Applicant Dashboard - shows application stats and quick actions
+// Uses the same monotone dark theme as the company manager dashboard
 
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';   // useSession gets current user, signOut logs out
-import { useRouter } from 'next/navigation';              // useRouter for redirecting
-import { useEffect } from 'react';                       // useEffect for checking auth status
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+type Stats = {
+  applications: number;
+  tasks: number;
+  announcements: number;
+};
+
+type Activity = {
+  type: 'application' | 'task' | 'announcement';
+  message: string;
+  detail: string;
+  timestamp: string;
+};
 
 export default function ApplicantDashboard() {
-  const { data: session, status } = useSession();   // Get session and loading status
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const [stats, setStats] = useState<Stats>({ applications: 0, tasks: 0, announcements: 0 });
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(true);
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
+      return;
     }
-  }, [status, router]);
+    if (status === 'loading') return;
+    if (!session || session.user?.role !== 'APPLICANT') {
+      router.push('/login');
+      return;
+    }
+    fetchStats();
+    fetchActivity();
+  }, [session, status, router]);
 
-  // Show loading while session is being fetched
-  if (status === 'loading') {
-    return <p>Loading...</p>;
+  const fetchStats = async () => {
+    try {
+      const [appRes, taskRes, announceRes] = await Promise.all([
+        fetch('/api/applicant/applications'),
+        fetch('/api/applicant/tasks'),
+        fetch('/api/applicant/announcements')
+      ]);
+      const appData = await appRes.json();
+      const taskData = await taskRes.json();
+      const announceData = await announceRes.json();
+      setStats({
+        applications: appData.applications?.length || 0,
+        tasks: taskData.tasks?.length || 0,
+        announcements: announceData.announcements?.length || 0
+      });
+      setLoading(false);
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  const fetchActivity = async () => {
+    try {
+      const [appRes, taskRes, announceRes] = await Promise.all([
+        fetch('/api/applicant/applications'),
+        fetch('/api/applicant/tasks'),
+        fetch('/api/applicant/announcements')
+      ]);
+      const appData = await appRes.json();
+      const taskData = await taskRes.json();
+      const announceData = await announceRes.json();
+
+      const all: Activity[] = [
+        ...(appData.applications || []).map((a: any) => ({
+          type: 'application' as const,
+          message: `Applied to ${a.internship?.title || 'internship'}`,
+          detail: a.internship?.company?.name || 'Company',
+          timestamp: a.createdAt
+        })),
+        ...(taskData.tasks || []).map((t: any) => ({
+          type: 'task' as const,
+          message: t.title,
+          detail: t.description?.substring(0, 60) || 'No description',
+          timestamp: t.createdAt
+        })),
+        ...(announceData.announcements || []).map((a: any) => ({
+          type: 'announcement' as const,
+          message: a.title,
+          detail: a.content?.substring(0, 60) || 'No content',
+          timestamp: a.createdAt
+        }))
+      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+       .slice(0, 5);
+
+      setActivities(all);
+    } catch {
+      // silent
+    }
+    setActivityLoading(false);
+  };
+
+  const actions = [
+    { label: 'Browse Internships', desc: 'Find and apply to opportunities', path: '/dashboard/applicant/internships', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+    )},
+    { label: 'My Applications', desc: 'Track your application status', path: '/dashboard/applicant/applications', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+    )},
+    { label: 'My Tasks', desc: 'View assigned tasks', path: '/dashboard/applicant/tasks', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
+    )},
+    { label: 'Announcements', desc: 'See company updates', path: '/dashboard/applicant/announcements', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+    )},
+  ];
+
+  const activityIcons: Record<string, JSX.Element> = {
+    application: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+    ),
+    task: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
+    ),
+    announcement: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+    )
+  };
+
+  const timeAgo = (date: string) => {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-neutral-500">Loading...</p>
+      </div>
+    );
   }
 
-  // Block access if not authenticated or not an APPLICANT
   if (!session || session.user?.role !== 'APPLICANT') {
-    return <p>Access denied. Applicants only.</p>;
+    return (
+      <div className="flex items-center justify-center py-20">
+        <p className="text-neutral-500">Access denied. Applicants only.</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-      <h1>Applicant Dashboard</h1>
-      <p>Welcome, {session.user?.name}! 👤</p>
+    <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line relative">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-white tracking-wide">Applicant Dashboard</h1>
+          <p className="text-neutral-500 text-sm mt-1 tracking-wider">Welcome back, {session.user?.name}</p>
+        </div>
 
-      {/* Quick Actions - navigation buttons to all applicant features */}
-      <div style={{ marginTop: '30px' }}>
-        <h2>Quick Actions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '20px' }}>
-          {/* Browse Internships button */}
-          <button
-            onClick={() => router.push('/dashboard/applicant/internships')}
-            style={{
-              padding: '20px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              textAlign: 'left'
-            }}
-          >
-            <h3 style={{ margin: '0 0 5px 0' }}>🔍 Browse Internships</h3>
-            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Find and apply to jobs</p>
-          </button>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+            <p className="text-neutral-500 text-xs uppercase tracking-wider">Applications</p>
+            <p className="text-2xl font-bold text-white mt-1">{stats.applications}</p>
+          </div>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+            <p className="text-neutral-500 text-xs uppercase tracking-wider">Tasks</p>
+            <p className="text-2xl font-bold text-white mt-1">{stats.tasks}</p>
+          </div>
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5">
+            <p className="text-neutral-500 text-xs uppercase tracking-wider">Announcements</p>
+            <p className="text-2xl font-bold text-white mt-1">{stats.announcements}</p>
+          </div>
+        </div>
 
-          {/* My Applications button */}
-          <button
-            onClick={() => router.push('/dashboard/applicant/applications')}
-            style={{
-              padding: '20px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              textAlign: 'left'
-            }}
-          >
-            <h3 style={{ margin: '0 0 5px 0' }}>📋 My Applications</h3>
-            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Track application status</p>
-          </button>
+        {/* Actions grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          {actions.map((action) => (
+            <button
+              key={action.label}
+              onClick={() => router.push(action.path)}
+              className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 flex items-center gap-4 text-left transition-all duration-200 hover:bg-neutral-800 hover:border-neutral-700 group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-neutral-800 flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:bg-neutral-700 transition-colors shrink-0">
+                {action.icon}
+              </div>
+              <div className="min-w-0">
+                <p className="text-white text-sm font-medium">{action.label}</p>
+                <p className="text-neutral-500 text-xs mt-0.5">{action.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
 
-          {/* My Tasks button */}
-          <button
-            onClick={() => router.push('/dashboard/applicant/tasks')}
-            style={{
-              padding: '20px',
-              backgroundColor: '#ff9800',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              textAlign: 'left'
-            }}
-          >
-            <h3 style={{ margin: '0 0 5px 0' }}>✅ My Tasks</h3>
-            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>View assigned tasks</p>
-          </button>
+        {/* Recent Activity Board */}
+        <div className="bg-neutral-900 border border-neutral-800 rounded-xl">
+          <div className="px-5 py-4 border-b border-neutral-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <h2 className="text-sm font-semibold text-white">Recent Activity</h2>
+            </div>
+          </div>
 
-          {/* Announcements button */}
-          <button
-            onClick={() => router.push('/dashboard/applicant/announcements')}
-            style={{
-              padding: '20px',
-              backgroundColor: '#e91e63',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              textAlign: 'left'
-            }}
-          >
-            <h3 style={{ margin: '0 0 5px 0' }}>📢 Announcements</h3>
-            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>See company updates</p>
-          </button>
+          <div className="divide-y divide-neutral-800/50">
+            {activityLoading ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-neutral-500 text-sm">Loading activity...</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="px-5 py-8 text-center">
+                <p className="text-neutral-500 text-sm">No recent activity yet.</p>
+                <p className="text-neutral-600 text-xs mt-1">Activity will appear here when you apply or receive tasks.</p>
+              </div>
+            ) : (
+              activities.map((activity, index) => (
+                <div key={index} className="px-5 py-3 flex items-start gap-3 hover:bg-neutral-800/30 transition-colors">
+                  <div className="mt-0.5 shrink-0 text-neutral-400">
+                    {activityIcons[activity.type]}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-white text-sm">{activity.message}</p>
+                    <p className="text-neutral-500 text-xs mt-0.5 truncate">{activity.detail}</p>
+                  </div>
+                  <span className="text-neutral-600 text-xs shrink-0 mt-0.5">{timeAgo(activity.timestamp)}</span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
-
-      {/* Logout button */}
-      <button
-        onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-        style={{
-          marginTop: '40px',
-          padding: '10px 20px',
-          backgroundColor: '#ff4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
-      >
-        Logout
-      </button>
     </div>
   );
 }
