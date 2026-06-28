@@ -133,10 +133,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Bottom Info */}
-          <p className="text-center text-dark-400 text-xs mt-8">
-            © 2024 InternHub. All rights reserved.
-          </p>
         </div>
       </div>
 
@@ -147,6 +143,13 @@ export default function LoginPage() {
           alt="Internship Portal Illustration"
           className="w-64 opacity-80"
         />
+      </div>
+
+      {/* Bottom Info - centered at bottom of window */}
+      <div className="fixed bottom-0 left-0 right-0 text-center p-4">
+        <p className="text-dark-400 text-xs">
+          © 2024 InternHub. All rights reserved.
+        </p>
       </div>
     </div>
   );
