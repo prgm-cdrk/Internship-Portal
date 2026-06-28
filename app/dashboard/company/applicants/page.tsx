@@ -18,7 +18,10 @@ type Application = {
   internship: { id: number; title: string };
 };
 
-const allStatuses = ['APPLIED', 'REVIEWED', 'INTERVIEW', 'ACCEPTED', 'REJECTED'];
+const allStatuses = ['APPLIED', 'REVIEWED', 'INTERVIEW', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'COMPLETED'];
+// Statuses the company manager can manually set from the Applicants page
+// CANCELLED and COMPLETED are only managed from the Interns page
+const updateableStatuses = ['APPLIED', 'REVIEWED', 'INTERVIEW', 'ACCEPTED', 'REJECTED'];
 
 const statusStyles: Record<string, string> = {
   APPLIED: 'bg-neutral-700 text-neutral-300 border border-neutral-600',
@@ -26,6 +29,8 @@ const statusStyles: Record<string, string> = {
   INTERVIEW: 'bg-neutral-700 text-white border border-neutral-500',
   ACCEPTED: 'bg-white text-black border border-white',
   REJECTED: 'bg-neutral-800 text-neutral-500 border border-neutral-700',
+  CANCELLED: 'bg-red-500/10 text-red-400 border border-red-500/20',
+  COMPLETED: 'bg-white/10 text-neutral-300 border border-white/10',
 };
 
 export default function ApplicantsPage() {
@@ -262,7 +267,7 @@ export default function ApplicantsPage() {
                             <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
                             <div className="bg-neutral-800 rounded-lg p-4">
                               <div className="flex gap-2 flex-wrap">
-                                {allStatuses.map((s) => (
+                                {updateableStatuses.map((s) => (
                                   <button
                                     key={s}
                                     onClick={() => handleStatusUpdate(app.id, s)}

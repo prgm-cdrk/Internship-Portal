@@ -70,8 +70,10 @@ enum Status {
   APPLIED
   REVIEWED
   INTERVIEW
-  ACCEPTED 
+  ACCEPTED
   REJECTED
+  CANCELLED    // Intern was cancelled by the company (e.g., performance issues)
+  COMPLETED    // Intern finished their required hours (offboarded)
 }
 
 model Application {
@@ -83,6 +85,7 @@ model Application {
   status Status
   resumeUrl String?
   startDate DateTime? // Set when status is ACCEPTED — triggers transfer to Interns page
+  offboardedAt DateTime? // Set when status is COMPLETED — triggers 30-day retention then auto-delete
   documents Document[]
   appliedAt DateTime @default(now())
 

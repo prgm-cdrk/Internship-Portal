@@ -1,6 +1,7 @@
 // API to fetch hired interns for the logged-in company
-// Returns users who have ACCEPTED applications with a start date set
-// These are the ones that have been "transferred" from the Applicants page
+// Returns ACCEPTED interns with startDate set (active interns)
+// Also returns COMPLETED interns within 30 days (offboarded interns)
+// Auto-deletes COMPLETED records older than 30 days on each load
 
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@/lib/auth';
@@ -28,12 +29,47 @@ export async function GET() {
     });
     const internshipIds = internships.map(i => i.id);
 
-    // Only return ACCEPTED applications that have a startDate set
-    const acceptedApplications = await prisma.application.findMany({
+    // Auto-delete COMPLETED records older than 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const expiredRecords = await prisma.application.findMany({
       where: {
         internshipId: { in: internshipIds },
-        status: 'ACCEPTED',
-        startDate: { not: null }
+        status: 'COMPLETED',
+        offboardedAt: { lt: thirtyDaysAgo }
+      }
+    });
+
+    // Delete resume files for expired records before deleting them
+    if (expiredRecords.length > 0) {
+      const fs = await import('fs');
+      const path = await import('path');
+
+      for (const record of expiredRecords) {
+        if (record.resumeUrl) {
+          const filePath = path.join(process.cwd(), 'public', record.resumeUrl);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        }
+      }
+
+      // Delete the expired Application records
+      const expiredIds = expiredRecords.map(r => r.id);
+      await prisma.application.deleteMany({
+        where: { id: { in: expiredIds } }
+      });
+    }
+
+    // Fetch both active (ACCEPTED + startDate) and recently offboarded (COMPLETED within 30 days)
+    const applications = await prisma.application.findMany({
+      where: {
+        internshipId: { in: internshipIds },
+        OR: [
+          { status: 'ACCEPTED', startDate: { not: null } },
+          { status: 'COMPLETED', offboardedAt: { gte: thirtyDaysAgo } }
+        ]
       },
       include: {
         user: {
@@ -46,7 +82,7 @@ export async function GET() {
     });
 
     const seen = new Set<number>();
-    const interns = acceptedApplications
+    const interns = applications
       .filter(app => {
         if (seen.has(app.user.id)) return false;
         seen.add(app.user.id);
@@ -59,7 +95,9 @@ export async function GET() {
         email: app.user.email,
         internship: app.internship.title,
         startDate: app.startDate,
-        resumeUrl: app.resumeUrl
+        resumeUrl: app.resumeUrl,
+        status: app.status,
+        offboardedAt: app.offboardedAt
       }));
 
     return Response.json({ interns }, { status: 200 });

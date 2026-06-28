@@ -122,7 +122,10 @@ export default function TrackApplicationsPage() {
           <div className="space-y-4">
             {applications.map((application) => {
               const isRejected = application.status === 'REJECTED';
-              const currentStep = isRejected ? -1 : (statusToStep[application.status] ?? 0);
+              const isCancelled = application.status === 'CANCELLED';
+              const isCompleted = application.status === 'COMPLETED';
+              const isTerminal = isRejected || isCancelled || isCompleted;
+              const currentStep = isTerminal ? -1 : (statusToStep[application.status] ?? 0);
               const isExpanded = expandedId === application.id;
 
               return (
@@ -147,6 +150,14 @@ export default function TrackApplicationsPage() {
                           <span className="px-3 py-1 rounded-md bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/30">
                             Rejected
                           </span>
+                        ) : isCancelled ? (
+                          <span className="px-3 py-1 rounded-md bg-red-500/10 text-red-400 text-xs font-medium border border-red-500/20">
+                            Cancelled
+                          </span>
+                        ) : isCompleted ? (
+                          <span className="px-3 py-1 rounded-md bg-white/10 text-neutral-300 text-xs font-medium border border-white/10">
+                            Completed
+                          </span>
                         ) : (
                           <span className="px-3 py-1 rounded-md bg-neutral-800 text-neutral-300 text-xs font-medium border border-neutral-700">
                             {steps[currentStep]}
@@ -165,23 +176,25 @@ export default function TrackApplicationsPage() {
                     <div className="mb-2">
                       <div className="flex items-center justify-between">
                         {steps.map((step, index) => {
-                          const isCompleted = !isRejected && index <= currentStep;
-                          const isCurrent = !isRejected && index === currentStep;
+                          const isCompletedStep = !isTerminal && index <= currentStep;
+                          const isCurrent = !isTerminal && index === currentStep;
                           return (
                             <div key={step} className="flex items-center flex-1 last:flex-none">
                               <div className="flex flex-col items-center">
                                 <div
                                   className={`w-3 h-3 rounded-full border-2 transition-all ${
-                                    isCompleted ? 'bg-white border-white' : 'bg-transparent border-neutral-700'
+                                    isCompletedStep ? 'bg-white border-white' : 'bg-transparent border-neutral-700'
                                   } ${isCurrent ? 'ring-2 ring-white/20 ring-offset-2 ring-offset-neutral-900' : ''}`}
                                 />
-                                <span className={`text-xs mt-1.5 whitespace-nowrap ${isCompleted ? 'text-white' : 'text-neutral-600'}`}>
+                                <span className={`text-xs mt-1.5 whitespace-nowrap ${isCompletedStep ? 'text-white' : 'text-neutral-600'}`}>
                                   {step}
                                 </span>
                               </div>
                               {index < steps.length - 1 && (
                                 <div className="flex-1 mx-2 mt-[-18px]">
-                                  <div className={`h-0.5 rounded-full ${!isRejected && index < currentStep ? 'bg-white' : 'bg-neutral-800'}`} />
+                                  <div className={`h-0.5 rounded-full ${!isTerminal && index < currentStep ? 'bg-white' : 'bg-neutral-800'}`} />
+                                </div>
+                              )}
                                 </div>
                               )}
                             </div>
@@ -224,6 +237,18 @@ export default function TrackApplicationsPage() {
                           >
                             Cancel Application
                           </button>
+                        </div>
+                      )}
+                      {/* Cancelled message */}
+                      {isCancelled && (
+                        <div className="mt-4 pt-3 border-t border-neutral-800/50">
+                          <p className="text-red-400/60 text-xs">This internship was cancelled by the company.</p>
+                        </div>
+                      )}
+                      {/* Completed message */}
+                      {isCompleted && (
+                        <div className="mt-4 pt-3 border-t border-neutral-800/50">
+                          <p className="text-neutral-500 text-xs">You have completed this internship.</p>
                         </div>
                       )}
                     </div>
