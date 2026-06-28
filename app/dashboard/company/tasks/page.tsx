@@ -15,6 +15,7 @@ type Task = {
   status: string;
   createdAt: string;
   user: { id: number; name: string; email: string };
+  department: string;
 };
 
 type Intern = {
@@ -39,6 +40,8 @@ export default function TasksPage() {
   const [saving, setSaving] = useState(false);
   const [interns, setInterns] = useState<Intern[]>([]);
   const [internsLoading, setInternsLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -120,6 +123,15 @@ export default function TasksPage() {
   if (status === 'loading' || loading) {
     return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
   }
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = search === '' ||
+      task.title.toLowerCase().includes(search.toLowerCase()) ||
+      task.user.name.toLowerCase().includes(search.toLowerCase()) ||
+      task.department.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'ALL' || task.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full dashboard-grid">
@@ -216,14 +228,45 @@ export default function TasksPage() {
           </form>
         )}
 
+        {/* Search + Filters */}
+        <div className="mb-6 space-y-3">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by task name, intern, or department..."
+              className="w-full pl-10 pr-4 py-2.5 bg-neutral-900 border border-neutral-800 rounded-lg text-white text-sm placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors"
+            />
+          </div>
+          <div className="flex gap-1.5">
+            {['ALL', 'ACCEPTED', 'ONGOING', 'COMPLETED'].map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === s
+                    ? 'bg-white text-black'
+                    : 'bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-700 hover:text-white'
+                }`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Tasks List */}
-        {tasks.length === 0 ? (
+        {filteredTasks.length === 0 ? (
           <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-12 text-center">
-            <p className="text-neutral-500">No tasks created yet.</p>
+            <p className="text-neutral-500">{tasks.length === 0 ? 'No tasks created yet.' : 'No tasks match your search.'}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.map((task) => (
+            {filteredTasks.map((task) => (
               <div key={task.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
@@ -242,6 +285,7 @@ export default function TasksPage() {
                 </div>
                 <div className="flex items-center gap-5 mt-3 text-xs text-neutral-500">
                   <span><span className="text-neutral-600">Assigned to:</span> {task.user.name}</span>
+                  <span><span className="text-neutral-600">Department:</span> {task.department}</span>
                   <span><span className="text-neutral-600">Deadline:</span> {new Date(task.deadline).toLocaleDateString()}</span>
                 </div>
               </div>

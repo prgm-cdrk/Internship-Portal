@@ -241,14 +241,15 @@ export default function InternsPage() {
                           <button
                             onClick={() => setConfirmAction({ type: 'offboard', intern })}
                             disabled={processingId === intern.applicationId}
-                            className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-neutral-200 transition-colors disabled:opacity-50"
+                            className="px-4 py-2 bg-gradient-to-r from-white to-neutral-200 text-black text-sm font-medium rounded-lg hover:shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 relative overflow-hidden group"
                           >
-                            {processingId === intern.applicationId ? 'Processing...' : 'Offboard (Finished)'}
+                            <span className="relative z-10">{processingId === intern.applicationId ? 'Processing...' : 'Offboard (Finished)'}</span>
+                            <span className="absolute inset-0 bg-gradient-to-r from-neutral-200 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                           </button>
                           <button
                             onClick={() => setConfirmAction({ type: 'cancel', intern })}
                             disabled={processingId === intern.applicationId}
-                            className="px-4 py-2 bg-neutral-800 border border-neutral-700 text-neutral-300 text-sm rounded-lg hover:bg-neutral-700 transition-colors disabled:opacity-50"
+                            className="px-4 py-2 bg-neutral-800 border border-neutral-700 text-neutral-300 text-sm rounded-lg hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 active:scale-95 transition-all duration-200 disabled:opacity-50"
                           >
                             Cancel Internship
                           </button>

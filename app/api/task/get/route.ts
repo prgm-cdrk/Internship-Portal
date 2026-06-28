@@ -32,7 +32,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // Fetch all tasks for this company with assigned user details
+    // Fetch all tasks for this company with assigned user and their internship details
     const tasks = await prisma.task.findMany({
       where: { companyId: company.id },
       include: {
@@ -47,8 +47,29 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' }   // Most recent tasks first
     });
 
-    // Return the tasks data
-    return Response.json({ tasks }, { status: 200 });
+    // Enrich tasks with internship (department) info from the user's accepted application
+    const enrichedTasks = await Promise.all(
+      tasks.map(async (task) => {
+        const application = await prisma.application.findFirst({
+          where: {
+            userId: task.assignedTo,
+            status: 'ACCEPTED'
+          },
+          include: {
+            internship: {
+              select: { title: true }
+            }
+          }
+        });
+        return {
+          ...task,
+          department: application?.internship?.title || 'Unknown'
+        };
+      })
+    );
+
+    // Return the enriched tasks data
+    return Response.json({ tasks: enrichedTasks }, { status: 200 });
 
   } catch (error) {
     // Log the error for debugging and return a generic error message
