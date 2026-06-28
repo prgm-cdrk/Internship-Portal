@@ -41,13 +41,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex">
+    <div className="min-h-screen bg-dark-900 flex">
       {/* Left Side - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Logo/Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-white mb-2">
               Intern<span className="text-accent-primary">Hub</span>
             </h1>
             <p className="text-dark-300 text-sm">
@@ -141,10 +141,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-dark-900 items-center justify-center relative overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/20 via-dark-900 to-dark-800"></div>
-        
+      <div className="hidden lg:flex lg:w-1/2 bg-dark-800 items-center justify-center relative overflow-hidden">
         {/* Illustration */}
         <div className="relative z-10 p-12">
           <img
