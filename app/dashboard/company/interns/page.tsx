@@ -158,11 +158,11 @@ export default function InternsPage() {
           ) : (
             <div className="space-y-3">
               {activeInterns.map((intern) => {
-                const isExpanded = expandedId === intern.id;
+                const isExpanded = expandedId === intern.applicationId;
                 return (
                   <div
                     key={intern.applicationId}
-                    className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden transition-colors hover:bg-neutral-800/50"
+                    className="bg-neutral-900 border border-neutral-800 rounded-xl transition-colors hover:bg-neutral-800/50"
                   >
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : intern.applicationId)}
@@ -278,7 +278,7 @@ export default function InternsPage() {
                 return (
                   <div
                     key={intern.applicationId}
-                    className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl overflow-hidden transition-colors hover:bg-neutral-800/30"
+                    className="bg-neutral-900/50 border border-neutral-800/50 rounded-xl transition-colors hover:bg-neutral-800/30"
                   >
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : intern.applicationId)}
