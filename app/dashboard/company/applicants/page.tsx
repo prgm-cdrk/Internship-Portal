@@ -177,18 +177,44 @@ export default function ApplicantsPage() {
                   {isExpanded && (
                     <div className="px-5 pb-5 border-t border-neutral-800">
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Applicant info */}
-                        <div>
-                          <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Applicant Details</p>
-                          <div className="bg-neutral-800 rounded-lg p-4 space-y-2">
-                            <p className="text-white text-sm"><span className="text-neutral-500">Name:</span> {app.user.name}</p>
-                            <p className="text-white text-sm"><span className="text-neutral-500">Email:</span> {app.user.email}</p>
-                            <p className="text-white text-sm"><span className="text-neutral-500">Internship:</span> {app.internship.title}</p>
-                            <p className="text-white text-sm"><span className="text-neutral-500">Applied:</span> {new Date(app.appliedAt).toLocaleDateString()}</p>
+                        {/* Left column: Applicant info + Status updater */}
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Applicant Details</p>
+                            <div className="bg-neutral-800 rounded-lg p-4 space-y-2">
+                              <p className="text-white text-sm"><span className="text-neutral-500">Name:</span> {app.user.name}</p>
+                              <p className="text-white text-sm"><span className="text-neutral-500">Email:</span> {app.user.email}</p>
+                              <p className="text-white text-sm"><span className="text-neutral-500">Internship:</span> {app.internship.title}</p>
+                              <p className="text-white text-sm"><span className="text-neutral-500">Applied:</span> {new Date(app.appliedAt).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
+                            <div className="bg-neutral-800 rounded-lg p-4">
+                              <div className="flex gap-2 flex-wrap">
+                                {allStatuses.map((s) => (
+                                  <button
+                                    key={s}
+                                    onClick={() => handleStatusUpdate(app.id, s)}
+                                    disabled={app.status === s || isUpdating}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                      app.status === s
+                                        ? 'bg-white text-black cursor-default'
+                                        : isUpdating
+                                          ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
+                                          : 'bg-neutral-700 text-neutral-400 border border-neutral-600 hover:bg-neutral-600 hover:text-white'
+                                    }`}
+                                  >
+                                    {s}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Resume */}
+                        {/* Right column: Resume */}
                         <div>
                           <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Resume</p>
                           <div className="bg-neutral-800 rounded-lg p-4">
@@ -214,31 +240,6 @@ export default function ApplicantsPage() {
                             ) : (
                               <p className="text-neutral-500 text-sm">No resume uploaded</p>
                             )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Status updater */}
-                      <div className="mt-4 pt-4 border-t border-neutral-800/50">
-                        <p className="text-xs text-neutral-500 uppercase tracking-wider mb-2">Update Status</p>
-                        <div className="bg-neutral-800 rounded-lg p-4 w-1/2">
-                          <div className="flex gap-2 flex-wrap">
-                            {allStatuses.map((s) => (
-                              <button
-                                key={s}
-                                onClick={() => handleStatusUpdate(app.id, s)}
-                                disabled={app.status === s || isUpdating}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                  app.status === s
-                                    ? 'bg-white text-black cursor-default'
-                                    : isUpdating
-                                      ? 'bg-neutral-800 text-neutral-600 cursor-not-allowed'
-                                      : 'bg-neutral-700 text-neutral-400 border border-neutral-600 hover:bg-neutral-600 hover:text-white'
-                                }`}
-                              >
-                                {s}
-                              </button>
-                            ))}
                           </div>
                         </div>
                       </div>
