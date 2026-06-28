@@ -10,8 +10,7 @@ import { useRouter } from 'next/navigation';              // useRouter for redir
 import { useEffect } from 'react';                       // useEffect for checking auth status
 
 export default function ApplicantDashboard() {
-  // Get the current session and loading status
-  const { data: session, status } = useSession();
+  const { data: session, status } = useSession();   // Get session and loading status
   const router = useRouter();
 
   // Redirect to login if user is not authenticated
@@ -32,57 +31,96 @@ export default function ApplicantDashboard() {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <h1>Applicant Dashboard</h1>
       <p>Welcome, {session.user?.name}! 👤</p>
 
-      {/* Applications and tasks overview section with stats cards */}
-      <div style={{ marginTop: '30px', border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-        <h2>Your Applications & Tasks</h2>
-        
-        {/* Stats grid - 3 columns showing applicant-specific metrics */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '15px', marginTop: '20px' }}>
-          <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
-            <h3>Applications</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>0</p>        {/* Will count from Application model */}
-            <p style={{ fontSize: '12px', color: '#666' }}>Submitted</p>
-          </div>
-          
-          <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
-            <h3>Pending Tasks</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>0</p>        {/* Will count from Task model */}
-            <p style={{ fontSize: '12px', color: '#666' }}>To Complete</p>
-          </div>
-          
-          <div style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '5px' }}>
-            <h3>Accepted</h3>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>0</p>        {/* Will count applications with ACCEPTED status */}
-            <p style={{ fontSize: '12px', color: '#666' }}>Offers</p>
-          </div>
-        </div>
+      {/* Quick Actions - navigation buttons to all applicant features */}
+      <div style={{ marginTop: '30px' }}>
+        <h2>Quick Actions</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '20px' }}>
+          {/* Browse Internships button */}
+          <button
+            onClick={() => router.push('/dashboard/applicant/internships')}
+            style={{
+              padding: '20px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <h3 style={{ margin: '0 0 5px 0' }}>🔍 Browse Internships</h3>
+            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Find and apply to jobs</p>
+          </button>
 
-        {/* Quick action buttons for applicant tasks */}
-        <div style={{ marginTop: '20px' }}>
-          <h3>Quick Actions</h3>
-          <button style={{ padding: '10px 20px', marginRight: '10px', cursor: 'pointer' }}>
-            Browse Internships     {/* Will link to public job board */}
+          {/* My Applications button */}
+          <button
+            onClick={() => router.push('/dashboard/applicant/applications')}
+            style={{
+              padding: '20px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <h3 style={{ margin: '0 0 5px 0' }}>📋 My Applications</h3>
+            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>Track application status</p>
           </button>
-          <button style={{ padding: '10px 20px', marginRight: '10px', cursor: 'pointer' }}>
-            My Applications        {/* Will link to application tracker */}
+
+          {/* My Tasks button */}
+          <button
+            onClick={() => router.push('/dashboard/applicant/tasks')}
+            style={{
+              padding: '20px',
+              backgroundColor: '#ff9800',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <h3 style={{ margin: '0 0 5px 0' }}>✅ My Tasks</h3>
+            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>View assigned tasks</p>
           </button>
-          <button style={{ padding: '10px 20px', marginRight: '10px', cursor: 'pointer' }}>
-            My Tasks               {/* Will link to assigned tasks */}
-          </button>
-          <button style={{ padding: '10px 20px', cursor: 'pointer' }}>
-            Announcements          {/* Will link to announcements view */}
+
+          {/* Announcements button */}
+          <button
+            onClick={() => router.push('/dashboard/applicant/announcements')}
+            style={{
+              padding: '20px',
+              backgroundColor: '#e91e63',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <h3 style={{ margin: '0 0 5px 0' }}>📢 Announcements</h3>
+            <p style={{ margin: 0, fontSize: '12px', opacity: 0.9 }}>See company updates</p>
           </button>
         </div>
       </div>
 
-      {/* Logout button - signs user out and redirects to login */}
+      {/* Logout button */}
       <button
         onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-        style={{ padding: '10px 20px', marginTop: '20px', cursor: 'pointer', backgroundColor: '#ff4444', color: 'white' }}
+        style={{
+          marginTop: '40px',
+          padding: '10px 20px',
+          backgroundColor: '#ff4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: 'pointer'
+        }}
       >
         Logout
       </button>
