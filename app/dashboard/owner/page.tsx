@@ -84,49 +84,49 @@ export default function OwnerDashboard() {
         )}
 
         {/* Two column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
           {/* Left column - Stats (takes 2 cols) */}
           <div className="lg:col-span-2 space-y-6">
 
             {/* Revenue hero card */}
-            <div className="bg-gradient-to-br from-accent-primary/20 via-dark-800 to-dark-800 border border-accent-primary/30 rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-accent-primary/20 via-dark-800 to-dark-800 border border-accent-primary/30 rounded-2xl p-8">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-dark-300 text-sm mb-1">Total Revenue</p>
-                  <p className="text-4xl font-bold text-white">₱{stats.totalRevenue.toLocaleString()}</p>
-                  <p className="text-dark-400 text-sm mt-1">From all subscriptions</p>
+                  <p className="text-5xl font-bold text-white">₱{stats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-dark-400 text-sm mt-2">From all subscriptions</p>
                 </div>
-                <div className="w-16 h-16 rounded-2xl bg-accent-primary/20 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-20 h-20 rounded-2xl bg-accent-primary/20 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
             </div>
 
-            {/* Stats grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {/* Stats grid - 2x2 */}
+            <div className="grid grid-cols-2 gap-4">
               {[
-                { label: 'Users', value: stats.totalUsers, color: 'text-accent-primary', icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                { label: 'Total Users', value: stats.totalUsers, color: 'text-accent-primary', icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 )},
-                { label: 'Companies', value: stats.totalCompanies, color: 'text-success', icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                { label: 'Total Companies', value: stats.totalCompanies, color: 'text-success', icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                 )},
-                { label: 'Internships', value: stats.totalInternships, color: 'text-accent-light', icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                { label: 'Total Internships', value: stats.totalInternships, color: 'text-accent-light', icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 )},
-                { label: 'Subscriptions', value: stats.activeSubscriptions, color: 'text-dark-300', icon: (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                { label: 'Active Subscriptions', value: stats.activeSubscriptions, color: 'text-dark-300', icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
                 )}
               ].map((stat) => (
-                <div key={stat.label} className="bg-dark-800 border border-dark-700 rounded-xl p-4 transition-all duration-300 hover:border-dark-500 hover:-translate-y-0.5">
-                  <div className="flex items-center gap-2 mb-2">
+                <div key={stat.label} className="bg-dark-800 border border-dark-700 rounded-xl p-6 transition-all duration-300 hover:border-dark-500 hover:-translate-y-0.5">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="text-dark-400">{stat.icon}</div>
-                    <span className="text-xs text-dark-400 uppercase tracking-wider">{stat.label}</span>
+                    <span className="text-sm text-dark-400 uppercase tracking-wider">{stat.label}</span>
                   </div>
-                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -134,7 +134,7 @@ export default function OwnerDashboard() {
 
           {/* Right column - Quick Actions */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-white">Quick Actions</h2>
+            <h2 className="text-lg font-semibold text-white mb-2">Quick Actions</h2>
 
             {[
               { label: 'Manage Users', desc: 'View and manage all users', path: '/dashboard/owner/users', color: 'hover:border-accent-primary/50 hover:bg-accent-primary/5', icon: (
