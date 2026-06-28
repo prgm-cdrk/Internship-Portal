@@ -99,8 +99,25 @@ export default function MyTasksPage() {
     <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full dashboard-grid">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-wide">My Tasks</h1>
-          <p className="text-neutral-500 text-sm mt-1">View and complete assigned tasks</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white tracking-wide">My Tasks</h1>
+              <p className="text-neutral-500 text-sm mt-1">View and complete assigned tasks</p>
+            </div>
+            {tasks.length > 0 && (
+              <div className="flex gap-2 ml-auto">
+                <span className="bg-neutral-800 text-neutral-300 text-xs px-3 py-1.5 rounded-lg border border-neutral-700">
+                  {tasks.length} total
+                </span>
+                <span className="bg-white/10 text-white text-xs px-3 py-1.5 rounded-lg border border-white/10">
+                  {tasks.filter(t => t.status === 'COMPLETED').length} completed
+                </span>
+                <span className="bg-neutral-800 text-neutral-400 text-xs px-3 py-1.5 rounded-lg border border-neutral-700">
+                  {tasks.filter(t => t.status !== 'COMPLETED').length} remaining
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {error && (

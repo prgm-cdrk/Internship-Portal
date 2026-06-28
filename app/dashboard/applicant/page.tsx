@@ -24,7 +24,7 @@ type ActivityItem = {
 
 // localStorage keys
 const READ_TASKS_KEY = 'readTasks';
-const TASK_STATUSES_KEY = 'taskStatuses';
+const TASK_COUNT_KEY = 'taskCount';
 const READ_APPS_KEY = 'readApps';
 const APP_STATUSES_KEY = 'appStatuses';
 const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
@@ -99,22 +99,20 @@ export default function ApplicantDashboard() {
         announcements: allAnnouncements.length
       });
 
-      // --- Count unread TASKS ---
-      const readTaskIds = getReadIds(READ_TASKS_KEY);
-      const savedTaskStatuses = getStoredStatuses(TASK_STATUSES_KEY);
-      let unreadTasks = 0;
-      for (const task of allTasks) {
-        const savedStatus = savedTaskStatuses[task.id];
-        const isRead = readTaskIds.includes(task.id);
-        // Unread if: never seen before OR status changed since last seen
-        if (!isRead || (savedStatus !== undefined && savedStatus !== task.status)) {
-          unreadTasks++;
-        }
-      }
-      setUnreadTaskCount(unreadTasks);
+      // --- Count unread TASKS (count-based: new tasks = badge) ---
+      const currentTaskCount = allTasks.length;
+      const prevTaskCount = parseInt(localStorage.getItem(TASK_COUNT_KEY) || '0');
+      const newTasks = Math.max(0, currentTaskCount - prevTaskCount);
+      setUnreadTaskCount(newTasks);
 
-      // Store current task statuses for next load comparison
+      // Store current task count for next load
+      localStorage.setItem(TASK_COUNT_KEY, currentTaskCount.toString());
+
+      // Mark returned tasks in activity feed (status changed from COMPLETED to ONGOING)
       for (const task of allTasks) {
+        const savedStatus = getStoredStatuses(TASK_STATUSES_KEY);
+        const oldStatus = savedStatus[task.id];
+        // Store current status for returned detection
         setStoredStatus(TASK_STATUSES_KEY, task.id, task.status);
       }
 
@@ -181,13 +179,8 @@ export default function ApplicantDashboard() {
 
   const handleActivityClick = (activity: ActivityItem) => {
     if (activity.type === 'task') {
-      markAsRead(READ_TASKS_KEY, activity.id);
-      // Store current status so it won't be "unread" next load
-      const saved = getStoredStatuses(TASK_STATUSES_KEY);
-      if (saved[activity.id]) {
-        // Status already stored from loadData — keep it
-      }
-      setUnreadTaskCount(prev => Math.max(0, prev - 1));
+      // Reset task count — user has seen the tasks
+      setUnreadTaskCount(0);
       router.push('/dashboard/applicant/tasks');
     } else if (activity.type === 'application') {
       markAsRead(READ_APPS_KEY, activity.id);
@@ -200,13 +193,8 @@ export default function ApplicantDashboard() {
     }
   };
 
-  const handleMarkAllRead = (type: 'task' | 'application' | 'announcement') => {
-    if (type === 'task') {
-      const allTaskIds = activities.filter(a => a.type === 'task').map(a => a.id);
-      allTaskIds.forEach(id => markAsRead(READ_TASKS_KEY, id));
-      setUnreadTaskCount(0);
-      router.push('/dashboard/applicant/tasks');
-    } else if (type === 'application') {
+  const handleMarkAllRead = (type: 'application' | 'announcement') => {
+    if (type === 'application') {
       const allAppIds = activities.filter(a => a.type === 'application').map(a => a.id);
       allAppIds.forEach(id => markAsRead(READ_APPS_KEY, id));
       setUnreadAppCount(0);
@@ -226,7 +214,7 @@ export default function ApplicantDashboard() {
     { label: 'My Applications', desc: 'Track your application status', badge: unreadAppCount, onClick: () => handleMarkAllRead('application'), icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
     )},
-    { label: 'My Tasks', desc: 'View assigned tasks', badge: unreadTaskCount, onClick: () => handleMarkAllRead('task'), icon: (
+    { label: 'My Tasks', desc: 'View assigned tasks', badge: unreadTaskCount, onClick: () => { setUnreadTaskCount(0); router.push('/dashboard/applicant/tasks'); }, icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2m-6 9l2 2 4-4" /></svg>
     )},
     { label: 'Announcements', desc: 'See company updates', badge: unreadAnnouncementCount, onClick: () => handleMarkAllRead('announcement'), icon: (
