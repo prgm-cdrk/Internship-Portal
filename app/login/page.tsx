@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,28 +41,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/5 via-dark-950 to-dark-950"></div>
-      
-      {/* Glow Effect */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-primary/10 rounded-full blur-3xl opacity-20"></div>
+    <div className="min-h-screen bg-dark-950 flex items-center justify-center">
+      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-0 items-center">
+        
+        {/* Left Side - Illustration */}
+        <div className="hidden lg:flex items-center justify-center p-8 bg-gradient-to-br from-dark-900 to-dark-950 rounded-3xl lg:rounded-r-none">
+          <Image
+            src="/login-illustration.png"
+            alt="InternHub Illustration"
+            width={400}
+            height={500}
+            className="max-w-full h-auto"
+            priority
+          />
+        </div>
 
-      <div className="relative w-full max-w-md z-10">
-        {/* Main Card */}
-        <div className="bg-dark-800 border border-dark-700 rounded-3xl shadow-2xl p-8 md:p-10">
-          
+        {/* Right Side - Form */}
+        <div className="p-8 lg:p-12">
           {/* Header */}
-          <div className="text-center mb-10">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-accent-primary to-accent-dark rounded-full flex items-center justify-center shadow-lg">
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-accent-primary to-accent-dark rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-2xl">📚</span>
               </div>
+              <h1 className="text-4xl font-bold text-white">
+                Intern<span className="text-accent-primary">Hub</span>
+              </h1>
             </div>
-            <h1 className="text-5xl font-bold text-white mb-3">
-              Intern<span className="text-accent-primary">Hub</span>
-            </h1>
-            <p className="text-dark-300 text-sm font-light tracking-wide">
+            <p className="text-dark-300 text-sm font-light tracking-widest">
               WELCOME BACK TO YOUR JOURNEY
             </p>
           </div>
@@ -74,42 +81,36 @@ export default function LoginPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             
             {/* Email Field */}
-            <div className="relative">
-              <label className="block text-white font-semibold mb-3 text-sm">
+            <div>
+              <label className="block text-white font-semibold mb-3 text-sm tracking-wide">
                 EMAIL ADDRESS
               </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
-                  required
-                />
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-accent-primary">✉️</span>
-              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                required
+              />
             </div>
 
             {/* Password Field */}
-            <div className="relative">
-              <label className="block text-white font-semibold mb-3 text-sm">
+            <div>
+              <label className="block text-white font-semibold mb-3 text-sm tracking-wide">
                 PASSWORD
               </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
-                  required
-                />
-                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-accent-primary">🔒</span>
-              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-dark-900 border border-dark-700 rounded-xl px-5 py-4 text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary focus:ring-2 focus:ring-accent-primary/30 transition duration-300"
+                required
+              />
             </div>
 
             {/* Submit Button */}
@@ -140,12 +141,19 @@ export default function LoginPage() {
             </Link>
           </p>
 
+          {/* Test Credentials */}
+          <div className="mt-8 bg-dark-900 border border-accent-primary/30 rounded-xl p-5">
+            <p className="text-accent-primary text-xs font-bold mb-3 uppercase tracking-wider">🔐 Test Credentials</p>
+            <div className="space-y-2">
+              <p className="text-dark-300 text-xs">
+                Email: <span className="text-accent-primary font-mono">prgm.cdrk@gmail.com</span>
+              </p>
+              <p className="text-dark-300 text-xs">
+                Password: <span className="text-accent-primary font-mono">MyOwnerP@ssw0rd123</span>
+              </p>
+            </div>
+          </div>
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-dark-400 text-xs mt-8 font-light">
-          © 2024 InternHub. Crafting meaningful internship experiences.
-        </p>
       </div>
     </div>
   );
