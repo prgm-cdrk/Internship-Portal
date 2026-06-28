@@ -70,12 +70,12 @@ export default function RegisterPage() {
       <div className="absolute bottom-[-150px] right-[-150px] w-[400px] h-[400px] bg-accent-primary/3 rounded-full blur-3xl" />
 
       {/* Registration card - horizontal */}
-      <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-3xl relative z-10">
+      <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-4xl relative z-10">
         <div className="bg-dark-800 rounded-2xl overflow-hidden">
           <div className="flex flex-col md:flex-row">
 
             {/* Left side - Branding */}
-            <div className="md:w-2/5 bg-gradient-to-br from-accent-primary/10 via-dark-800 to-dark-800 p-8 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-dark-700">
+            <div className="md:w-2/5 bg-gradient-to-br from-accent-primary/10 via-dark-800 to-dark-800 p-10 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-dark-700">
               <Link href="/" className="inline-flex items-center gap-2 mb-6">
                 <div className="w-10 h-10 rounded-lg bg-accent-primary/20 border border-accent-primary/30 flex items-center justify-center">
                   <svg className="w-6 h-6 text-accent-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +117,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Right side - Form */}
-            <div className="md:w-3/5 p-8">
+            <div className="md:w-3/5 p-10">
               {/* Error message */}
               {error && (
                 <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-5">

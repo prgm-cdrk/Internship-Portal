@@ -71,11 +71,11 @@ export default function LoginPage() {
       <div className="absolute top-1/2 right-10 w-1.5 h-1.5 rounded-full bg-accent-primary/35 animate-float" style={{ animationDelay: '3.5s' }}></div>
       <div className="absolute bottom-20 right-1/5 w-2 h-2 rounded-full bg-accent-primary/25 animate-float" style={{ animationDelay: '4.5s' }}></div>
 
-      <div className="relative w-full max-w-md z-10">
+      <div className="relative w-full max-w-lg z-10">
         
         {/* Animated border wrapper */}
         <div className="animate-border-rotate rounded-2xl p-[1px]">
-          <div className="bg-dark-800 rounded-2xl p-10 shadow-[0_0_30px_rgba(255,107,53,0.08)]">
+          <div className="bg-dark-800 rounded-2xl p-12 shadow-[0_0_30px_rgba(255,107,53,0.08)]">
           
           {/* Header */}
           <div className="mb-12">
