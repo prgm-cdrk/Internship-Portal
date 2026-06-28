@@ -78,6 +78,20 @@ body {
 }
 
 .animate-border-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-border-glow::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
   background: conic-gradient(from 0deg, #FF6B35, transparent 25%, #FF6B35 50%, transparent 75%, #FF6B35);
   animation: border-rotate 4s linear infinite;
+  z-index: 0;
+}
+
+.animate-border-glow > * {
+  position: relative;
+  z-index: 1;
 }

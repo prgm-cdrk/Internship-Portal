@@ -74,7 +74,7 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md z-10">
         
         {/* Animated border wrapper */}
-        <div className="relative rounded-2xl p-[2px] animate-border-glow">
+        <div className="animate-border-glow rounded-2xl p-[2px]">
           <div className="bg-dark-800 rounded-2xl p-10 shadow-[0_0_50px_rgba(255,107,53,0.15)]">
           
           {/* Header */}
