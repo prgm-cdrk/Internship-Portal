@@ -90,7 +90,7 @@ export default function OwnerDashboard() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* Revenue hero card */}
-            <div className="bg-gradient-to-br from-accent-primary/20 via-dark-800 to-dark-800 border border-accent-primary/30 rounded-2xl p-8">
+            <div className="bg-gradient-to-br from-accent-primary/20 via-dark-800 to-dark-800 border border-accent-primary/30 rounded-2xl p-8 mt-10">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-dark-300 text-sm mb-1">Total Revenue</p>
