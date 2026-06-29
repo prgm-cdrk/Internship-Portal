@@ -106,7 +106,17 @@ export default function CompanyProfilePage() {
       return;
     }
     try {
-      const logoUrl = await uploadLogo();
+      // Only upload if user selected a new logo file
+      let logoUrl: string | null | undefined = undefined;
+      if (logoFile) {
+        const uploaded = await uploadLogo();
+        if (!uploaded) {
+          setError('Failed to upload logo. Please try again.');
+          setSaving(false);
+          return;
+        }
+        logoUrl = uploaded;
+      }
 
       const response = await fetch('/api/company/update', {
         method: 'PUT',
@@ -120,6 +130,7 @@ export default function CompanyProfilePage() {
         return;
       }
       setCompany(data.company);
+      setLogoPreview(data.company.logoUrl || null);
       setIsEditing(false);
       setLogoFile(null);
       setSaving(false);
