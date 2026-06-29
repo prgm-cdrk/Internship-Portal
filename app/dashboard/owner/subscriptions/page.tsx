@@ -46,7 +46,7 @@ export default function OwnerSubscriptionsPage() {
       return;
     }
     if (status === 'loading') return;
-    if (session?.user?.role !== 'OWNER') {
+    if (session?.user?.role !== 'OWNER' && session?.user?.role !== 'STAFF') {
       router.push('/login');
       return;
     }
@@ -84,7 +84,7 @@ export default function OwnerSubscriptionsPage() {
     );
   }
 
-  if (!session || session.user?.role !== 'OWNER') {
+  if (!session || (session.user?.role !== 'OWNER' && session.user?.role !== 'STAFF')) {
     return (
       <div className="min-h-screen bg-dark-950 flex items-center justify-center">
         <p className="text-dark-300">Access denied. Owner only.</p>

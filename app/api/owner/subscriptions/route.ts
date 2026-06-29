@@ -19,8 +19,8 @@ export async function GET(req: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if user is OWNER — only owners can access subscription management
-    if (session.user?.role !== 'OWNER') {
+    // Check if user is OWNER or STAFF
+    if (session.user?.role !== 'OWNER' && session.user?.role !== 'STAFF') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
