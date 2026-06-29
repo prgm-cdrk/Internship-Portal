@@ -71,6 +71,7 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { if (status === 'unauthenticated') router.push('/login'); }, [status, router]);
   useEffect(() => { if (status === 'authenticated') fetchAnalytics(); }, [status]);
@@ -78,7 +79,12 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     const res = await fetch('/api/owner/analytics');
     const data = await res.json();
-    setAnalytics(data);
+    if (res.ok) {
+      setAnalytics(data);
+    } else {
+      console.error('Analytics fetch error:', data.error);
+      setError(data.error || 'Failed to load analytics');
+    }
     setLoading(false);
   };
 
@@ -88,8 +94,12 @@ export default function AnalyticsPage() {
     return pct.startsWith('-') ? `${pct}%` : `+${pct}%`;
   };
 
-  if (status === 'loading' || loading || !analytics) {
+  if (status === 'loading' || loading) {
     return <div className="flex items-center justify-center py-20"><p className="text-neutral-500">Loading...</p></div>;
+  }
+
+  if (error || !analytics) {
+    return <div className="flex items-center justify-center py-20"><p className="text-red-400">{error || 'Failed to load analytics'}</p></div>;
   }
 
   return (
