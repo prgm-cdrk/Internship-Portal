@@ -17,7 +17,9 @@ export async function GET(req: Request) {
           select: {
             id: true,
             name: true,
-            industry: true
+            industry: true,
+            location: true,
+            logoUrl: true,
           }
         },
         _count: {

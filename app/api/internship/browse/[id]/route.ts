@@ -27,6 +27,9 @@ export async function GET(
             name: true,
             industry: true,
             website: true,
+            location: true,
+            description: true,
+            logoUrl: true,
           }
         },
         _count: {

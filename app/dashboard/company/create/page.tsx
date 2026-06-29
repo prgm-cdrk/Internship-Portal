@@ -1,6 +1,6 @@
 // Create Company page - where new company managers set up their company profile
 // Only appears when a COMPANY user doesn't have a company yet (redirected from dashboard)
-// The form collects company name, industry, and optional website
+// The form collects company name, industry, website, location, and description
 // After creation, the user is redirected back to the company dashboard
 
 'use client';
@@ -8,6 +8,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function CreateCompanyPage() {
   const { data: session, status } = useSession();
@@ -16,6 +17,10 @@ export default function CreateCompanyPage() {
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState('');
   const [website, setWebsite] = useState('');
+  const [location, setLocation] = useState('');
+  const [description, setDescription] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,6 +37,31 @@ export default function CreateCompanyPage() {
     );
   }
 
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setError('Logo must be under 2MB');
+        return;
+      }
+      setError('');
+      setLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setLogoPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadLogo = async (): Promise<string | null> => {
+    if (!logoFile) return null;
+    const formData = new FormData();
+    formData.append('logo', logoFile);
+    const res = await fetch('/api/upload/logo', { method: 'POST', body: formData });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.logoUrl || null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -44,10 +74,12 @@ export default function CreateCompanyPage() {
     }
 
     try {
+      const logoUrl = await uploadLogo();
+
       const response = await fetch('/api/company/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, industry, website })
+        body: JSON.stringify({ name, industry, website, location, description, logoUrl })
       });
 
       const data = await response.json();
@@ -67,7 +99,7 @@ export default function CreateCompanyPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent-primary/20 border border-accent-primary/30 mb-4">
@@ -81,7 +113,6 @@ export default function CreateCompanyPage() {
 
         {/* Card */}
         <div className="bg-dark-800 border border-dark-700 rounded-2xl p-8">
-          {/* Error */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-6">
               <p className="text-sm text-red-400">{error}</p>
@@ -89,9 +120,30 @@ export default function CreateCompanyPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Logo */}
+            <div className="flex items-center gap-5">
+              <div className="w-20 h-20 rounded-xl bg-dark-900 border border-dark-600 flex items-center justify-center overflow-hidden shrink-0">
+                {logoPreview ? (
+                  <img src={logoPreview} alt="Logo preview" className="w-full h-full object-cover" />
+                ) : (
+                  <svg className="w-8 h-8 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark-200 mb-1">Company Logo</label>
+                <p className="text-dark-400 text-xs mb-2">PNG or JPG, max 2MB</p>
+                <label className="cursor-pointer px-3 py-1.5 bg-dark-900 border border-dark-600 rounded-lg text-xs text-dark-300 hover:text-white hover:border-dark-400 transition-colors inline-block">
+                  Choose File
+                  <input type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                </label>
+              </div>
+            </div>
+
             {/* Company Name */}
             <div>
-              <label className="block text-sm font-medium text-dark-200 mb-1.5">Company Name</label>
+              <label className="block text-sm font-medium text-dark-200 mb-1.5">Company Name *</label>
               <input
                 type="text"
                 value={name}
@@ -104,7 +156,7 @@ export default function CreateCompanyPage() {
 
             {/* Industry */}
             <div>
-              <label className="block text-sm font-medium text-dark-200 mb-1.5">Industry</label>
+              <label className="block text-sm font-medium text-dark-200 mb-1.5">Industry *</label>
               <select
                 value={industry}
                 onChange={(e) => setIndustry(e.target.value)}
@@ -122,6 +174,20 @@ export default function CreateCompanyPage() {
               </select>
             </div>
 
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-dark-200 mb-1.5">
+                Location <span className="text-dark-400">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Manila, Philippines"
+                className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-xl text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary transition-colors"
+              />
+            </div>
+
             {/* Website */}
             <div>
               <label className="block text-sm font-medium text-dark-200 mb-1.5">
@@ -133,6 +199,20 @@ export default function CreateCompanyPage() {
                 onChange={(e) => setWebsite(e.target.value)}
                 placeholder="https://example.com"
                 className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-xl text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary transition-colors"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-dark-200 mb-1.5">
+                Description <span className="text-dark-400">(optional)</span>
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Tell applicants about your company, culture, and what makes it a great place to intern..."
+                rows={4}
+                className="w-full px-4 py-3 bg-dark-900 border border-dark-600 rounded-xl text-white placeholder-dark-400 focus:outline-none focus:border-accent-primary transition-colors resize-none"
               />
             </div>
 

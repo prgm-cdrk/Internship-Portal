@@ -40,16 +40,19 @@ model User {
 }
 
 model Company {
-  id        Int     @id @default(autoincrement())
-  name      String
-  industry  String
-  website   String?
-  userId    Int     @unique
+  id          Int     @id @default(autoincrement())
+  name        String
+  industry    String
+  website     String?
+  location    String?          // City/Country (e.g. "Manila, Philippines")
+  description String?          // Short company bio
+  logoUrl     String?          // Company logo file path
+  userId      Int     @unique
   internships Internship[]
-  tasks Task[]
+  tasks       Task[]
   announcements Announcement[]
   subscriptions Subscription[]
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 }
 
 // model for Internship Posting
