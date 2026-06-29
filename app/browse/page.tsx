@@ -224,11 +224,13 @@ export default function PublicBrowsePage() {
                               {internship.company.location}
                             </p>
                           )}
-                          <p className="text-dark-500 text-sm line-clamp-2">
-                            {internship.description.length > 160
-                              ? internship.description.substring(0, 160) + '...'
-                              : internship.description}
-                          </p>
+                          {!isSelected && (
+                            <p className="text-dark-500 text-sm line-clamp-2">
+                              {internship.description.length > 160
+                                ? internship.description.substring(0, 160) + '...'
+                                : internship.description}
+                            </p>
+                          )}
                         </div>
                         <svg
                           className={`w-5 h-5 text-dark-500 shrink-0 mt-2 transition-transform duration-200 ${isSelected ? 'rotate-180' : ''}`}
