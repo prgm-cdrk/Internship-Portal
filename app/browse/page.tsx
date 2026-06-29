@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
@@ -70,7 +70,14 @@ export default function PublicBrowsePage() {
   const selected = internships.find((i) => i.id === selectedId);
 
   return (
-    <div className="min-h-screen bg-arcana-bg text-arcana-text overflow-hidden" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+    <div className="min-h-screen bg-arcana-bg text-arcana-text overflow-hidden relative" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+
+      {/* ─── FLOATING BACKGROUND ORBS ─── */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-arcana-primary/10 rounded-full blur-[120px] animate-drift" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-arcana-indigo/8 rounded-full blur-[100px] animate-drift-reverse" />
+        <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] bg-arcana-light/5 rounded-full blur-[80px] animate-float" />
+      </div>
 
       {/* ─── HEADER ─── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-arcana-bg/80 backdrop-blur-xl border-b border-white/5">
@@ -110,15 +117,15 @@ export default function PublicBrowsePage() {
           {/* Stats bar */}
           {!loading && internships.length > 0 && (
             <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
-              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center hover:border-arcana-primary/20 hover:bg-white/[0.05] transition-all duration-300" style={{ animation: 'fadeSlideUp 0.6s ease-out 0.2s both' }}>
                 <p className="text-2xl font-bold text-white">{internships.length}</p>
                 <p className="text-xs text-dark-500 mt-1">Open Positions</p>
               </div>
-              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center hover:border-arcana-primary/20 hover:bg-white/[0.05] transition-all duration-300" style={{ animation: 'fadeSlideUp 0.6s ease-out 0.35s both' }}>
                 <p className="text-2xl font-bold text-white">{new Set(internships.map((i) => i.company.id)).size}</p>
                 <p className="text-xs text-dark-500 mt-1">Companies</p>
               </div>
-              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center hover:border-arcana-primary/20 hover:bg-white/[0.05] transition-all duration-300" style={{ animation: 'fadeSlideUp 0.6s ease-out 0.5s both' }}>
                 <p className="text-2xl font-bold text-white">{internships.reduce((sum, i) => sum + i.slots, 0)}</p>
                 <p className="text-xs text-dark-500 mt-1">Total Slots</p>
               </div>
@@ -127,8 +134,8 @@ export default function PublicBrowsePage() {
 
           {/* Search bar */}
           <div className="max-w-xl mx-auto mb-10">
-            <div className="relative">
-              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative group/search">
+              <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-500 group-focus-within/search:text-arcana-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -136,7 +143,7 @@ export default function PublicBrowsePage() {
                 placeholder="Search by title, company, or industry..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-arcana-primary/50 transition"
+                className="w-full pl-12 pr-4 py-3 bg-white/[0.03] border border-white/10 rounded-xl text-white placeholder-dark-500 focus:outline-none focus:border-arcana-primary/50 focus:shadow-[0_0_20px_rgba(114,98,248,0.1)] transition-all duration-300"
               />
             </div>
           </div>
@@ -170,16 +177,17 @@ export default function PublicBrowsePage() {
           {/* Internship cards */}
           {!loading && filtered.length > 0 && (
             <div className="space-y-4">
-              {filtered.map((internship) => {
+              {filtered.map((internship, index) => {
                 const isSelected = selectedId === internship.id;
                 const daysLeft = Math.max(0, Math.ceil((new Date(internship.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
 
                 return (
                   <div
                     key={internship.id}
-                    className={`bg-white/[0.03] border rounded-2xl overflow-hidden transition-all duration-300 ${
-                      isSelected ? 'border-arcana-primary/40 shadow-[0_0_30px_rgba(114,98,248,0.1)]' : 'border-white/5 hover:border-white/10'
+                    className={`group bg-white/[0.03] border rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/[0.05] hover:shadow-[0_0_40px_rgba(114,98,248,0.06)] ${
+                      isSelected ? 'border-arcana-primary/40 shadow-[0_0_30px_rgba(114,98,248,0.1)]' : 'border-white/5 hover:border-white/15'
                     }`}
+                    style={{ animation: `fadeSlideUp 0.5s ease-out ${0.1 + index * 0.08}s both` }}
                   >
                     {/* Card header — always visible, clickable to expand */}
                     <button
