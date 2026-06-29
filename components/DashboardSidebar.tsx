@@ -20,15 +20,14 @@ export default function DashboardSidebar() {
   // Fetch staff permissions if STAFF role
   useEffect(() => {
     if (role === 'STAFF') {
-      fetch('/api/owner/staff')
+      fetch('/api/staff/me')
         .then(r => r.json())
         .then(data => {
-          const my = data.staff?.find((s: { userId: number }) => s.userId === parseInt(session?.user?.id || '0'));
-          if (my) setStaffPerms(JSON.parse(my.permissions));
+          if (data.permissions) setStaffPerms(data.permissions);
         })
         .catch(() => {});
     }
-  }, [role, session]);
+  }, [role]);
 
   // Auto-collapse on small screens
   useEffect(() => {

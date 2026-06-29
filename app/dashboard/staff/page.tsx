@@ -38,14 +38,12 @@ export default function StaffDashboard() {
 
   const fetchStaffInfo = async () => {
     try {
-      const res = await fetch('/api/owner/staff');
+      const res = await fetch('/api/staff/me');
       const data = await res.json();
-      // Find the staff record matching the current user
-      const myStaff = data.staff?.find((s: { userId: number }) => s.userId === parseInt(session?.user?.id || '0'));
-      if (myStaff) {
+      if (res.ok && data.permissions) {
         setStaffInfo({
-          role: myStaff.role,
-          permissions: JSON.parse(myStaff.permissions),
+          role: data.role,
+          permissions: data.permissions,
         });
       }
     } catch { /* silent */ }
