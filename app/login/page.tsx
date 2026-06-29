@@ -1,3 +1,7 @@
+// Login page for InternsHub
+// Handles email/password authentication via NextAuth credentials provider
+// Features animated gradient background, eye icon toggle, and responsive form
+
 'use client';
 
 import { signIn } from 'next-auth/react';
@@ -8,12 +12,15 @@ import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Handle form submission — authenticates user via NextAuth credentials
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -23,7 +30,7 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false,
+        redirect: false, // Prevent automatic redirect so we can handle errors
       });
 
       if (result?.error) {
@@ -32,6 +39,7 @@ export default function LoginPage() {
         return;
       }
 
+      // Redirect to role-based dashboard on successful login
       if (result?.ok) {
         router.push('/dashboard');
       }
