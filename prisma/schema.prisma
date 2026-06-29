@@ -42,11 +42,11 @@ model Company {
   name      String
   industry  String
   website   String?
-  userId    Int
+  userId    Int     @unique
   internships Internship[]
-  tasks Task[] // linked to Task model
-  announcements Announcement[] // linked to Announcement model
-  subscriptions Subscription[] // linked to Subscription model
+  tasks Task[]
+  announcements Announcement[]
+  subscriptions Subscription[]
   createdAt DateTime @default(now())
 }
 

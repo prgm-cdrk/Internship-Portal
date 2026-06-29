@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -41,6 +42,12 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-dark-950 flex items-center justify-center p-4 relative overflow-hidden">
+      
+      {/* Arcana Solution logo - top right */}
+      <Link href="/" className="fixed top-5 right-6 flex items-center gap-2 z-50">
+        <Image src="/Arcana-Logo.png" alt="Arcana Solution" width={28} height={28} className="rounded-lg" />
+        <span className="text-sm font-semibold text-dark-400 hover:text-white transition-colors">ARCANA SOLUTION</span>
+      </Link>
       
       {/* Animated Gradient Background */}
       <div className="absolute inset-0 animate-gradient-shift"></div>
@@ -81,10 +88,11 @@ export default function LoginPage() {
           <div className="bg-dark-800 rounded-2xl p-12 shadow-[0_0_30px_rgba(255,107,53,0.08)]">
           
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">
-              Login
-            </h1>
+          <div className="mb-6">
+            <div className="flex flex-col items-center gap-3 mb-6">
+              <Image src="/internsHub-logo.png" alt="InternsHub" width={80} height={80} className="rounded-xl" />
+              <span className="text-lg font-bold text-white tracking-wide" style={{ fontFamily: "'Satoshi', sans-serif" }}>InternsHub</span>
+            </div>
             <p className="text-dark-400 text-sm font-light">
               Access your internship portal
             </p>
@@ -162,7 +170,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-dark-400 text-xs mt-8 font-light">
-          © 2024 InternHub. All rights reserved.
+          © {new Date().getFullYear()} InternsHub by Arcana Solution. All rights reserved.
         </p>
       </div>
     </div>

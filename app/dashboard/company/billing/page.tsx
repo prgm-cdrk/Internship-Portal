@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 export default function BillingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [subscription, setSubscription] = useState(null);
+  const [subscription, setSubscription] = useState<{ plan: string; status: string; expiredAt?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [upgrading, setUpgrading] = useState(false);
@@ -113,8 +113,8 @@ export default function BillingPage() {
           <p className="text-white text-2xl font-bold">{currentPlan}</p>
           <span className="px-2 py-0.5 rounded text-xs font-medium bg-white text-black">ACTIVE</span>
         </div>
-        {subscription?.renewalDate && (
-          <p className="text-neutral-500 text-xs mt-2">Renews {new Date(subscription.renewalDate).toLocaleDateString()}</p>
+        {subscription?.expiredAt && (
+          <p className="text-neutral-500 text-xs mt-2">Renews {new Date(subscription.expiredAt).toLocaleDateString()}</p>
         )}
       </div>
 

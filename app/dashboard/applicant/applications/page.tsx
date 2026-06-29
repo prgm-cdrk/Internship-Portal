@@ -66,6 +66,31 @@ export default function TrackApplicationsPage() {
       }
       setApplications(data.applications);
       setLoading(false);
+
+      // Mark all applications as read so dashboard badge clears
+      const READ_APPS_KEY = 'readApps';
+      const APP_STATUSES_KEY = 'appStatuses';
+      const existingIds: number[] = (() => {
+        try {
+          const stored = localStorage.getItem(READ_APPS_KEY);
+          return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+      })();
+      const newIds = data.applications.map((a: any) => a.id);
+      const merged = [...new Set([...existingIds, ...newIds])];
+      localStorage.setItem(READ_APPS_KEY, JSON.stringify(merged));
+
+      // Store current statuses for change detection on next dashboard load
+      const savedStatuses: Record<number, string> = (() => {
+        try {
+          const s = localStorage.getItem(APP_STATUSES_KEY);
+          return s ? JSON.parse(s) : {};
+        } catch { return {}; }
+      })();
+      for (const app of data.applications) {
+        savedStatuses[app.id] = app.status;
+      }
+      localStorage.setItem(APP_STATUSES_KEY, JSON.stringify(savedStatuses));
     } catch {
       setError('Failed to load applications');
       setLoading(false);

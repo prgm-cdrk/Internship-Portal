@@ -12,7 +12,7 @@ export default function CompaniesManagementPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [companies, setCompanies] = useState([]);
+  const [companies, setCompanies] = useState<Array<{ id: number; name: string; industry: string; createdAt: string; subscription?: { plan: string; status: string } | null; user?: { name: string } | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filterPlan, setFilterPlan] = useState('ALL');

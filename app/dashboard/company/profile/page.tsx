@@ -14,7 +14,7 @@ export default function CompanyProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [company, setCompany] = useState(null);
+  const [company, setCompany] = useState<{ id: number; name: string; industry: string; website?: string; userId: number; createdAt: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
 

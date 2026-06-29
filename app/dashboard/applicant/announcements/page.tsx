@@ -49,6 +49,18 @@ export default function MyAnnouncementsPage() {
       }
       setAnnouncements(data.announcements);
       setLoading(false);
+
+      // Mark all announcements as read so dashboard badge clears
+      const READ_ANNOUNCEMENTS_KEY = 'readAnnouncements';
+      const existingIds: number[] = (() => {
+        try {
+          const stored = localStorage.getItem(READ_ANNOUNCEMENTS_KEY);
+          return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
+      })();
+      const newIds = data.announcements.map((a: any) => a.id);
+      const merged = [...new Set([...existingIds, ...newIds])];
+      localStorage.setItem(READ_ANNOUNCEMENTS_KEY, JSON.stringify(merged));
     } catch {
       setError('Failed to load announcements');
       setLoading(false);

@@ -12,6 +12,13 @@
   --color-accent-light: #FF8C54;
   --color-accent-dark: #E55A2B;
 
+  --color-arcana-primary: #7262F8;
+  --color-arcana-light: #8B7CFF;
+  --color-arcana-indigo: #5E63E8;
+  --color-arcana-deep: #5142D9;
+  --color-arcana-bg: #09090F;
+  --color-arcana-text: #F4F4F7;
+
   --color-success: #10B981;
   --color-danger: #EF4444;
 }
@@ -24,12 +31,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Satoshi', Arial, Helvetica, sans-serif;
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, -40px) scale(1); }
+  75% { transform: translate(-30px, 10px) scale(0.95); }
+}
+
+@keyframes drift_reverse {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  25% { transform: translate(-25px, 15px) scale(0.95); }
+  50% { transform: translate(15px, 30px) scale(1.05); }
+  75% { transform: translate(20px, -20px) scale(1); }
 }
 
 @keyframes pulse_slow {
@@ -42,12 +63,29 @@ body {
   100% { transform: rotate(360deg); }
 }
 
+@keyframes shimmer {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.06; }
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
+.animate-drift {
+  animation: drift 12s ease-in-out infinite;
+}
+
+.animate-drift-reverse {
+  animation: drift_reverse 14s ease-in-out infinite;
+}
+
 .animate-pulse_slow {
   animation: pulse_slow 4s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 4s ease-in-out infinite;
 }
 
 .animate-rotate_slow {
@@ -151,4 +189,65 @@ body {
   background-size: 50px 50px;
   -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+/* ─── Landing Page Animations ─── */
+
+/* Gradient text animation */
+@keyframes gradient-text {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-text 4s ease infinite;
+}
+
+/* Logo pulse glow */
+@keyframes logo-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(114, 98, 248, 0.2), 0 0 40px rgba(114, 98, 248, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(114, 98, 248, 0.4), 0 0 60px rgba(114, 98, 248, 0.2); }
+}
+
+.animate-logo-pulse {
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Typing cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typing-cursor::after {
+  content: '|';
+  animation: blink 0.8s step-end infinite;
+  color: #7262F8;
+  margin-left: 2px;
+}
+
+/* Card tilt */
+.tilt-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.tilt-card:hover {
+  transform: translateY(-8px) rotateX(2deg) rotateY(-2deg);
+  box-shadow: 0 20px 40px rgba(114, 98, 248, 0.15);
 }

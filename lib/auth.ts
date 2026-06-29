@@ -21,7 +21,7 @@ export const { handlers, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials: Record<string, unknown> | undefined) {
         // This function handles login logic
         if (!credentials?.email || !credentials?.password) {
           return null;
@@ -29,14 +29,14 @@ export const { handlers, auth } = NextAuth({
 
         // Find user by email
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email as string }
         });
 
         if (!user) return null;
 
         // Compare password with stored hash
         const isPasswordValid = await bcrypt.compare(
-          credentials.password,
+          credentials.password as string,
           user.password
         );
 
@@ -59,14 +59,14 @@ export const { handlers, auth } = NextAuth({
         async jwt({ token, user }) {
         if (user) {
             token.id = user.id;
-            token.role = user.role;
+            token.role = (user as any).role;
         }
         return token;
         },
         async session({ session, token }) {
         if (session.user) {
-            session.user.id = token.id;
-            session.user.role = token.role;
+            session.user.id = token.id as string;
+            session.user.role = token.role as string;
         }
         return session;
         }

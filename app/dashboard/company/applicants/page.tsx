@@ -196,7 +196,7 @@ export default function ApplicantsPage() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <span className="text-neutral-500 text-xs hidden sm:block">{app.internship.title}</span>
-                      <span className="text-neutral-500 text-xs hidden sm:block">Starts: {new Date(app.startDate).toLocaleDateString()}</span>
+                      <span className="text-neutral-500 text-xs hidden sm:block">Starts: {app.startDate ? new Date(app.startDate).toLocaleDateString() : '—'}</span>
                       <button
                         onClick={() => router.push('/dashboard/company/interns')}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-black hover:bg-neutral-200 transition-colors"

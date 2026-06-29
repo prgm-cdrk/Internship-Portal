@@ -46,7 +46,7 @@ export default function DashboardHeader() {
 
           {/* Home */}
           <button
-            onClick={() => router.push('/')}
+            onClick={() => window.open('/', '_blank')}
             className="px-2.5 py-1.5 text-neutral-500 hover:text-white text-xs flex items-center gap-1.5 transition-colors rounded-md hover:bg-neutral-900"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

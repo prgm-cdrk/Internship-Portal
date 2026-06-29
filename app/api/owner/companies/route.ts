@@ -24,28 +24,39 @@ export async function GET(req: Request) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Fetch all companies with subscription info and manager name
+    // Fetch all companies with subscription info
     const companies = await prisma.company.findMany({
       include: {
-        user: {
-          select: {
-            name: true,
-            email: true
-          }
-        },
-        subscription: {
+        subscriptions: {
           select: {
             plan: true,
             status: true,
             expiredAt: true
-          }
+          },
+          take: 1
         }
       },
       orderBy: { createdAt: 'desc' }
     });
 
+    // Fetch manager info for each company (no Prisma relation — query separately)
+    const userIds = companies.map(c => c.userId);
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true }
+    });
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    // Merge manager info into companies
+    const companiesWithManagers = companies.map(c => ({
+      ...c,
+      manager: userMap.get(c.userId) || null,
+      subscription: c.subscriptions?.[0] || null,
+      subscriptions: undefined
+    }));
+
     // Return the companies data
-    return Response.json({ companies }, { status: 200 });
+    return Response.json({ companies: companiesWithManagers }, { status: 200 });
 
   } catch (error) {
     // Log the error for debugging and return a generic error message

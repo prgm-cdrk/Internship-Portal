@@ -54,6 +54,10 @@ export default function MyTasksPage() {
       }
       setTasks(data.tasks);
       setLoading(false);
+
+      // Mark all tasks as seen by updating lastVisit timestamp
+      // This clears the "My Tasks" badge on the dashboard
+      localStorage.setItem('lastVisit', new Date().toISOString());
     } catch {
       setError('Failed to load tasks');
       setLoading(false);

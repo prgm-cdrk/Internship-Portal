@@ -5,6 +5,7 @@
 
 'use client';
 
+import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,7 +20,7 @@ type Activity = {
 export default function CompanyDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [company, setCompany] = useState(null);
+  const [company, setCompany] = useState<{ id: number; name: string; industry: string; website?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
@@ -123,7 +124,7 @@ export default function CompanyDashboard() {
     )}
   ];
 
-  const activityIcons: Record<string, JSX.Element> = {
+  const activityIcons: Record<string, React.JSX.Element> = {
     application: (
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
     ),

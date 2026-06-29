@@ -3,14 +3,11 @@
 // It wraps all pages with the AuthProvider so session handling works everywhere
 
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
 import { AuthProvider } from "@/lib/SessionProvider";
 import "./globals.css";
 
-// Plus Jakarta Sans font from Google Fonts
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-});
+// Satoshi font from Fontshare CDN
+const satoshiLink = "https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap";
 
 // Metadata for the app - shows in the browser tab title
 export const metadata: Metadata = {
@@ -26,7 +23,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={jakarta.className}>
+      <head>
+        <link rel="stylesheet" href={satoshiLink} />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" />
+      </head>
+      <body className="font-sans">
         {/* AuthProvider wraps children so useSession() works in any page */}
         <AuthProvider>{children}</AuthProvider>
       </body>
