@@ -228,7 +228,7 @@ export default function Home() {
                   Sign Up for Companies
                 </Link>
                 <Link
-                  href="/register"
+                  href="/browse"
                   className="px-8 py-4 bg-white/5 text-arcana-text font-semibold rounded-xl border border-white/10 hover:border-arcana-primary/50 hover:bg-white/10 transition-all text-center"
                 >
                   Start Browsing Internships

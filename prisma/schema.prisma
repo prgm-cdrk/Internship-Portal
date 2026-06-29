@@ -32,8 +32,10 @@ model User {
   role            Role
   permissionLevel PermissionLevel?  // null for APPLICANT/COMPANY, set for MEMBERS
   createdBy       Int?               // who created this user (for audit)
+  emailVerified   DateTime?          // null = not yet verified; set when user clicks verification link
   applications    Application[]
   tasks           Task[]
+  verificationTokens VerificationToken[]
   createdAt       DateTime @default(now())
 }
 
@@ -149,5 +151,18 @@ model Subscription {
   plan Plan
   status planStatus
   expiredAt DateTime 
+  createdAt DateTime @default(now())
+}
+
+// Email verification tokens
+// Generated when a user registers — expires after 7 days
+// Auto-deleted when user verifies or during cleanup
+
+model VerificationToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime // 7 days from creation
   createdAt DateTime @default(now())
 }

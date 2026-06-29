@@ -16,6 +16,8 @@ export default function RegisterPage() {
   const [role, setRole] = useState('APPLICANT');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
+  const [verifyUrl, setVerifyUrl] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +58,10 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/login');
+      // Show verification message with link
+      setVerifyUrl(data.verifyUrl || '');
+      setRegistered(true);
+      setLoading(false);
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);
@@ -80,6 +85,39 @@ export default function RegisterPage() {
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,107,53,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,107,53,0.06)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:linear-gradient(to_bottom_right,black_20%,transparent_80%)]"></div>
 
       {/* Registration card - horizontal */}
+      {registered ? (
+        <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-md relative z-10">
+          <div className="bg-dark-800 rounded-2xl p-10 text-center">
+            <div className="w-16 h-16 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Check Your Email</h2>
+            <p className="text-dark-400 text-sm mb-6">
+              We&apos;ve sent a verification link to <span className="text-white font-medium">{email}</span>.
+              Please verify your email within 7 days.
+            </p>
+            {verifyUrl && (
+              <div className="bg-dark-900/50 border border-dark-700 rounded-lg p-4 mb-6">
+                <p className="text-xs text-dark-500 mb-2">Development — Verification URL:</p>
+                <a
+                  href={verifyUrl}
+                  className="text-accent-primary text-xs break-all hover:underline"
+                >
+                  {verifyUrl}
+                </a>
+              </div>
+            )}
+            <Link
+              href="/login"
+              className="inline-block w-full py-3 bg-accent-primary text-white font-semibold rounded-lg hover:bg-accent-secondary transition-colors"
+            >
+              Go to Login
+            </Link>
+          </div>
+        </div>
+      ) : (
       <div className="animate-border-rotate rounded-2xl p-[1px] w-full max-w-4xl relative z-10">
         <div className="bg-dark-800 rounded-2xl overflow-hidden">
           <div className="flex flex-col md:flex-row">
@@ -206,6 +244,7 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

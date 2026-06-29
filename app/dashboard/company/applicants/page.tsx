@@ -44,13 +44,17 @@ export default function ApplicantsPage() {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [settingDateId, setSettingDateId] = useState<number | null>(null);
   const [startDateValue, setStartDateValue] = useState('');
+  const [applicantInfo, setApplicantInfo] = useState<{ activeCount: number; limit: string | number; plan: string } | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
   useEffect(() => {
-    if (status === 'authenticated') fetchApplications();
+    if (status === 'authenticated') {
+      fetchApplications();
+      fetchApplicantCount();
+    }
   }, [status]);
 
   const fetchApplications = async () => {
@@ -67,6 +71,18 @@ export default function ApplicantsPage() {
     } catch {
       setError('Failed to load applications');
       setLoading(false);
+    }
+  };
+
+  const fetchApplicantCount = async () => {
+    try {
+      const response = await fetch('/api/company/applicant-count');
+      const data = await response.json();
+      if (response.ok) {
+        setApplicantInfo(data);
+      }
+    } catch {
+      // Silently fail — count display is optional
     }
   };
 
@@ -139,7 +155,18 @@ export default function ApplicantsPage() {
     <div className="p-8 bg-gradient-to-b from-neutral-950 to-black min-h-full animate-scan-line dashboard-grid">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white tracking-wide">Applicants</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white tracking-wide">Applicants</h1>
+            {applicantInfo && (
+              <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${
+                applicantInfo.limit !== 'Unlimited' && applicantInfo.activeCount >= (applicantInfo.limit as number)
+                  ? 'bg-red-500/10 border border-red-500/30 text-red-400'
+                  : 'bg-neutral-800 border border-neutral-700 text-neutral-400'
+              }`}>
+                {applicantInfo.activeCount} / {applicantInfo.limit} profiles ({applicantInfo.plan})
+              </span>
+            )}
+          </div>
           <p className="text-neutral-500 text-sm mt-1">Review applications and update status</p>
         </div>
 
