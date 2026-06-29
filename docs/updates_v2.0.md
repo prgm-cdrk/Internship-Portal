@@ -164,8 +164,119 @@ This document tracks all updates made after Phase 9 completion, focusing on the 
 
 ---
 
+## Public Internship Browsing
+
+### Public Browse Page (`/browse`)
+**Files:**
+- `app/browse/page.tsx` — Public browse page (no auth required)
+- `app/browse/[id]/page.tsx` — Public internship detail page
+- `app/api/internship/browse/[id]/route.ts` — Single internship API
+
+**Design:** Matches landing page (arcana theme, Space Grotesk font, dark background)
+
+**Features:**
+- Search/filter by title, company, industry
+- Expandable cards with full description
+- Company info section
+- Deadline countdown badges (days left / deadline passed)
+- Stats bar (open positions, companies, total slots)
+- **Logged out:** "Sign Up to Apply" prompt
+- **Logged in:** "Apply Now" links to dashboard
+
+### Landing Page Button Updated
+**File:** `app/page.tsx`
+
+**Before:** "Start Browsing Internships" → `/register`
+**After:** "Start Browsing Internships" → `/browse`
+
+---
+
+## Email Verification System
+
+### Schema Changes
+**File:** `prisma/schema.prisma`
+
+| Model | Field | Type | Purpose |
+|-------|-------|------|---------|
+| `User` | `emailVerified` | `DateTime?` | null = not verified; set on verification |
+| `VerificationToken` | `token` | `String @unique` | Random 32-byte hex token |
+| `VerificationToken` | `expiresAt` | `DateTime` | 7 days from creation |
+| `VerificationToken` | `onDelete` | `Cascade` | Auto-deletes when user is deleted |
+
+### Register Flow Updated
+**File:** `app/api/auth/register/route.ts`
+
+1. Create user (emailVerified = null)
+2. Generate verification token (crypto.randomBytes)
+3. Log verification URL to console (simulated email)
+4. Return verifyUrl in response for dev convenience
+
+### Verify Endpoint
+**File:** `app/api/auth/verify/route.ts`
+
+- `GET /api/auth/verify?token=xxx`
+- Validates token, checks expiry, marks user as verified
+- Deletes token after use (single-use)
+
+### Verify Page
+**File:** `app/verify/page.tsx`
+
+- Shows "Verifying..." spinner while processing
+- Success: green checkmark + "Go to Login" button
+- Error: red X + "Register Again" link
+- Wrapped in Suspense for searchParams access
+
+### Cleanup Endpoint
+**File:** `app/api/auth/cleanup/route.ts`
+
+- `GET /api/auth/cleanup?secret=xxx`
+- Deletes users where `emailVerified = null` AND `createdAt > 7 days`
+- Also deletes associated records (applications, tasks, tokens)
+- Protected by `CLEANUP_SECRET` env variable
+- Can be triggered by external cron service (e.g., cron-job.org)
+
+### Register Page Updated
+**File:** `app/register/page.tsx`
+
+- After registration, shows "Check Your Email" screen
+- Displays verification URL for development convenience
+- "Go to Login" button after registration
+
+---
+
+## Applicant Profile Limits
+
+### Plan Limits
+| Plan | Max Active Applicant Profiles |
+|------|-------------------------------|
+| FREE | 2 |
+| BASIC | 10 |
+| PRO | Unlimited |
+
+### Applicant Count API
+**File:** `app/api/company/applicant-count/route.ts`
+
+- Returns `{ plan, activeCount, limit, remaining }`
+- Counts applications that are NOT CANCELLED or COMPLETED
+
+### Application Creation Limit Check
+**File:** `app/api/application/create/route.ts`
+
+- Before creating application, checks company's applicant count
+- If count >= limit, returns 403 with plan limit message
+- Prevents companies from exceeding their plan allowance
+
+### Applicant Count Badge
+**File:** `app/dashboard/company/applicants/page.tsx`
+
+- Shows "X / Y profiles (PLAN)" badge next to page title
+- Badge turns red when limit is reached
+
+---
+
 ## Git Commits
 ```
 feat: landing page, contact us, home button fix, auth & build fixes
+feat: public internship browsing, email verification, applicant limits
 ```
 **Commit:** `5735a3d` — Pushed to `origin/main`
