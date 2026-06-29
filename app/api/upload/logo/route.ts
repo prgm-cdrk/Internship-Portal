@@ -46,6 +46,6 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error('Logo upload error:', error);
-    return Response.json({ error: 'Failed to upload logo' }, { status: 500 });
+    return Response.json({ error: 'Failed to upload logo', details: String(error) }, { status: 500 });
   }
 }

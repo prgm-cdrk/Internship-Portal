@@ -92,7 +92,11 @@ export default function CompanyProfilePage() {
     const formData = new FormData();
     formData.append('logo', logoFile);
     const res = await fetch('/api/upload/logo', { method: 'POST', body: formData });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('Logo upload failed:', res.status, errData);
+      return null;
+    }
     const data = await res.json();
     return data.logoUrl || null;
   };
@@ -111,7 +115,7 @@ export default function CompanyProfilePage() {
       if (logoFile) {
         const uploaded = await uploadLogo();
         if (!uploaded) {
-          setError('Failed to upload logo. Please try again.');
+          setError('Failed to upload logo. Check the browser console (F12) for details.');
           setSaving(false);
           return;
         }
