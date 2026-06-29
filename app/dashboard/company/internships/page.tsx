@@ -84,7 +84,7 @@ export default function InternshipsPage() {
                 <div className="min-w-0 flex-1">
                   <h3 className="text-white font-medium text-sm">{internship.title}</h3>
                   <p className="text-neutral-500 text-xs mt-1 line-clamp-2">
-                    {internship.description.length > 120 ? internship.description.substring(0, 120) + '...' : internship.description}
+                    {(() => { const t = internship.description.replace(/<[^>]*>/g, '').trim(); return t.length > 120 ? t.substring(0, 120) + '...' : t; })()}
                   </p>
                 </div>
               </div>

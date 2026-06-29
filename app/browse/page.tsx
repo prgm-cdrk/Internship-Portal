@@ -224,13 +224,14 @@ export default function PublicBrowsePage() {
                               {internship.company.location}
                             </p>
                           )}
-                          {!isSelected && (
-                            <p className="text-dark-500 text-sm line-clamp-2">
-                              {internship.description.length > 160
-                                ? internship.description.substring(0, 160) + '...'
-                                : internship.description}
-                            </p>
-                          )}
+                          {!isSelected && (() => {
+                            const plainText = internship.description.replace(/<[^>]*>/g, '').trim();
+                            return (
+                              <p className="text-dark-500 text-sm line-clamp-2">
+                                {plainText.length > 160 ? plainText.substring(0, 160) + '...' : plainText}
+                              </p>
+                            );
+                          })()}
                         </div>
                         <svg
                           className={`w-5 h-5 text-dark-500 shrink-0 mt-2 transition-transform duration-200 ${isSelected ? 'rotate-180' : ''}`}
@@ -267,8 +268,18 @@ export default function PublicBrowsePage() {
                     {isSelected && (
                       <div className="px-6 pb-6 border-t border-white/5">
                         <div className="pt-5">
-                          {/* Full description */}
-                          <p className="text-dark-300 text-sm leading-relaxed mb-6">{internship.description}</p>
+                          {/* Full description rendered as HTML */}
+                          <div
+                            className="text-dark-300 text-sm leading-relaxed mb-6 prose prose-invert prose-sm max-w-none
+                              [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-2
+                              [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mb-2
+                              [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mb-1
+                              [&_p]:mb-2
+                              [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-2
+                              [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-2
+                              [&_li]:mb-1"
+                            dangerouslySetInnerHTML={{ __html: internship.description }}
+                          />
 
                           {/* Company info */}
                           <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 mb-6">

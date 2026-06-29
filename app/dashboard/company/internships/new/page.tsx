@@ -7,6 +7,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function NewInternshipPage() {
   const { data: session, status } = useSession();
@@ -32,7 +33,8 @@ export default function NewInternshipPage() {
     setError('');
     setLoading(true);
 
-    if (!title || !description || !slots || !deadline) {
+    const descText = description.replace(/<[^>]*>/g, '').trim();
+    if (!title || !descText || !slots || !deadline) {
       setError('All fields are required');
       setLoading(false);
       return;
@@ -111,14 +113,12 @@ export default function NewInternshipPage() {
             {/* Description section */}
             <div className="p-6 border-b border-neutral-800">
               <label className="block text-xs text-neutral-500 uppercase tracking-wider mb-2">Description</label>
-              <textarea
+              <RichTextEditor
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={setDescription}
                 placeholder="Describe the role, responsibilities, requirements, and what the intern will learn..."
-                rows={10}
-                className="w-full px-4 py-3 bg-neutral-950 border border-neutral-700 rounded-xl text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500 transition-colors resize-none leading-relaxed"
               />
-              <p className="text-neutral-600 text-xs mt-2">Be detailed — include role responsibilities, required skills, and learning outcomes.</p>
+              <p className="text-neutral-600 text-xs mt-2">Use the toolbar for formatting — bold, headings, bullet lists, etc.</p>
             </div>
 
             {/* Slots and Deadline section */}

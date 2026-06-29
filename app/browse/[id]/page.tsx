@@ -175,7 +175,17 @@ export default function PublicInternshipDetailPage() {
               {/* Description */}
               <div className="p-8">
                 <h2 className="text-white font-semibold mb-4">Description</h2>
-                <p className="text-dark-300 text-sm leading-relaxed whitespace-pre-line">{internship.description}</p>
+                <div
+                  className="text-dark-300 text-sm leading-relaxed prose prose-invert prose-sm max-w-none
+                    [&_h1]:text-lg [&_h1]:font-bold [&_h1]:text-white [&_h1]:mb-2
+                    [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mb-2
+                    [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mb-1
+                    [&_p]:mb-2
+                    [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-2
+                    [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-2
+                    [&_li]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: internship.description }}
+                />
               </div>
 
               {/* Company info */}
