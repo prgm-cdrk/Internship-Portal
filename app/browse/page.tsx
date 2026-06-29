@@ -73,14 +73,10 @@ export default function PublicBrowsePage() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-arcana-bg/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-arcana-primary/20 border border-arcana-primary/30 flex items-center justify-center">
-              <svg className="w-5 h-5 text-arcana-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <span className="text-lg font-bold text-white">InternsHub</span>
+            <img src="/Arcana-Logo.png" alt="Arcana Solution" className="h-8 w-auto" />
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <Link href="/browse" className="text-sm text-arcana-light font-medium">Browse</Link>
             <Link href="/login" className="px-4 py-2 text-sm text-dark-300 hover:text-white transition-colors">
               Sign In
             </Link>
@@ -95,8 +91,11 @@ export default function PublicBrowsePage() {
       <main className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
 
-          {/* Page header */}
+          {/* Page header with InternsHub logo */}
           <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <img src="/internsHub-logo.png" alt="InternsHub" className="h-14 w-auto" />
+            </div>
             <p className="text-arcana-light text-sm font-medium tracking-wider uppercase mb-3">Opportunities</p>
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Browse Internships</h1>
             <p className="text-dark-300 max-w-xl mx-auto">
