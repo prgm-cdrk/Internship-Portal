@@ -107,16 +107,16 @@ export default function PublicBrowsePage() {
 
           {/* Stats bar */}
           {!loading && internships.length > 0 && (
-            <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-8">
-              <div className="text-center">
+            <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mb-8">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
                 <p className="text-2xl font-bold text-white">{internships.length}</p>
                 <p className="text-xs text-dark-500 mt-1">Open Positions</p>
               </div>
-              <div className="text-center">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
                 <p className="text-2xl font-bold text-white">{new Set(internships.map((i) => i.company.id)).size}</p>
                 <p className="text-xs text-dark-500 mt-1">Companies</p>
               </div>
-              <div className="text-center">
+              <div className="bg-white/[0.03] border border-white/5 rounded-xl p-5 text-center">
                 <p className="text-2xl font-bold text-white">{internships.reduce((sum, i) => sum + i.slots, 0)}</p>
                 <p className="text-xs text-dark-500 mt-1">Total Slots</p>
               </div>
