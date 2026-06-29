@@ -27,6 +27,8 @@ export default function DashboardPage() {
       router.push('/dashboard/company');
     } else if (userRole === 'APPLICANT') {
       router.push('/dashboard/applicant');
+    } else if (userRole === 'STAFF') {
+      router.push('/dashboard/staff');
     }
   }, [session, status, router]);
 
