@@ -16,6 +16,7 @@ enum Role {
   OWNER
   COMPANY
   APPLICANT
+  STAFF
 }
 
 enum PermissionLevel {
@@ -33,10 +34,58 @@ model User {
   permissionLevel PermissionLevel?  // null for APPLICANT/COMPANY, set for MEMBERS
   createdBy       Int?               // who created this user (for audit)
   emailVerified   DateTime?          // null = not yet verified; set when user clicks verification link
+  isActive        Boolean  @default(true) // false = suspended/banned
+  staff           Staff?
   applications    Application[]
   tasks           Task[]
   verificationTokens VerificationToken[]
   createdAt       DateTime @default(now())
+}
+
+// Staff accounts created by the Owner for dashboard management
+// Each staff has a role (ADMIN/MODERATOR/VIEWER) and granular permissions
+model Staff {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role          String   @default("VIEWER")  // ADMIN, MODERATOR, VIEWER
+  permissions   String   @default("[]")      // JSON array of permission keys
+  isSuspended   Boolean  @default(false)
+  createdBy     Int      // Owner who created this staff
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Platform activity feed — tracks all significant events
+model Activity {
+  id        Int      @id @default(autoincrement())
+  type      String   // signup, application, payment, task, announcement, system
+  action    String   // created, updated, deleted, suspended, etc.
+  entity    String   // user, company, internship, application, subscription
+  entityId  Int?
+  details   String?  // JSON with additional context
+  userId    Int?     // who performed the action
+  createdAt DateTime @default(now())
+}
+
+// Audit log — tracks owner/staff actions for compliance
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      // who performed the action
+  action    String   // user.suspend, company.delete, settings.update, etc.
+  target    String?  // what was affected (e.g., "user:123", "company:45")
+  details   String?  // JSON with before/after values
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+// Platform settings — persisted in database instead of client-side
+model PlatformSettings {
+  id            Int      @id @default(autoincrement())
+  key           String   @unique
+  value         String
+  updatedAt     DateTime @updatedAt
 }
 
 model Company {
